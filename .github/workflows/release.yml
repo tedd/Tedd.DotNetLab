@@ -1,0 +1,218 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release version tag (for example v1.0.0)"
+        required: true
+        default: "v1.0.0"
+      publish_nuget:
+        description: "Publish packages to NuGet.org (uses NUGET_API_KEY secret)"
+        required: false
+        type: boolean
+        default: false
+      publish_github_packages:
+        description: "Publish packages to GitHub Packages"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build and test native Windows CoreCLR profiler
+        shell: pwsh
+        run: ./native/build-native.ps1 -BuildRoot "${{ runner.temp }}/dotnetlab-build/native"
+
+      - name: Restore and publish Windows x64 distribution
+        shell: pwsh
+        run: |
+          $version = ("${{ github.ref_name }}" -replace '^v', '')
+          if (-not $version -or $version -eq 'main' -or $version -eq 'master') { $version = ("${{ inputs.tag }}" -replace '^v', '') }
+          $buildRoot = "${{ runner.temp }}/dotnetlab-build"
+          $publishDir = "${{ runner.temp }}/dotnetlab-publish-win-x64"
+          New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
+
+          dotnet restore src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj --locked-mode "-p:DotNetLabBuildRoot=$buildRoot"
+          dotnet publish src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj -c Release --no-restore --output $publishDir "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version" -p:UseAppHost=false -p:SelfContained=false -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=false
+
+          foreach ($item in @('LICENSE', 'README.md', 'SECURITY.md', 'global.json')) {
+            Copy-Item -LiteralPath $item -Destination (Join-Path $publishDir $item) -Force
+          }
+          Copy-Item -Path 'docs' -Destination (Join-Path $publishDir 'docs') -Recurse -Force
+          Copy-Item -Path 'schemas' -Destination (Join-Path $publishDir 'schemas') -Recurse -Force
+
+          $distDir = "${{ runner.temp }}/dist"
+          New-Item -ItemType Directory -Path $distDir -Force | Out-Null
+          $zipName = "Tedd.DotNetLab-$version-windows-x64.zip"
+          Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath (Join-Path $distDir $zipName) -Force
+
+      - name: Upload Windows native profiler
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-windows-x64
+          path: ${{ runner.temp }}/dotnetlab-build/native/Tedd.DotNetLab.Profiler.dll
+
+      - name: Upload Windows x64 archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: ${{ runner.temp }}/dist/*.zip
+
+  build-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build libssl-dev
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build and test native Linux CoreCLR profiler
+        run: |
+          cmake -S native -B "${{ runner.temp }}/dotnetlab-build/native" -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
+          cmake --build "${{ runner.temp }}/dotnetlab-build/native"
+          ctest --test-dir "${{ runner.temp }}/dotnetlab-build/native" --output-on-failure
+
+      - name: Restore and publish Linux x64 distribution
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ -z "$VERSION" || "$VERSION" == "main" || "$VERSION" == "master" ]]; then VERSION="${{ inputs.tag }}"; VERSION="${VERSION#v}"; fi
+          BUILD_ROOT="${{ runner.temp }}/dotnetlab-build"
+          PUBLISH_DIR="${{ runner.temp }}/dotnetlab-publish-linux-x64"
+          mkdir -p "$PUBLISH_DIR" "${{ runner.temp }}/dist"
+
+          dotnet restore src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj --locked-mode "-p:DotNetLabBuildRoot=$BUILD_ROOT"
+          dotnet publish src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj -c Release --no-restore --output "$PUBLISH_DIR" "-p:DotNetLabBuildRoot=$BUILD_ROOT" "-p:Version=$VERSION" -p:UseAppHost=false -p:SelfContained=false -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=false
+
+          if [[ -f "$BUILD_ROOT/native/Tedd.DotNetLab.Profiler.so" ]]; then
+            cp "$BUILD_ROOT/native/Tedd.DotNetLab.Profiler.so" "$PUBLISH_DIR/"
+          fi
+          cp LICENSE README.md SECURITY.md global.json "$PUBLISH_DIR/"
+          cp -R docs schemas "$PUBLISH_DIR/"
+
+          TAR_NAME="Tedd.DotNetLab-$VERSION-linux-x64.tar.gz"
+          tar -C "$PUBLISH_DIR" -czf "${{ runner.temp }}/dist/$TAR_NAME" .
+
+      - name: Upload Linux native profiler
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-linux-x64
+          path: ${{ runner.temp }}/dotnetlab-build/native/Tedd.DotNetLab.Profiler.so
+
+      - name: Upload Linux x64 archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: ${{ runner.temp }}/dist/*.tar.gz
+
+  pack-nuget:
+    needs: [build-windows-x64, build-linux-x64]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Stage Windows and Linux native profilers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: ${{ runner.temp }}/dotnetlab-build/native
+          merge-multiple: true
+
+      - name: Restore, build, and pack NuGet packages
+        shell: pwsh
+        run: |
+          $version = ("${{ github.ref_name }}" -replace '^v', '')
+          if (-not $version -or $version -eq 'main' -or $version -eq 'master') { $version = ("${{ inputs.tag }}" -replace '^v', '') }
+          $buildRoot = "${{ runner.temp }}/dotnetlab-build"
+          $nupkgDir = "${{ runner.temp }}/nupkgs"
+          New-Item -ItemType Directory -Path $nupkgDir -Force | Out-Null
+
+          dotnet restore Tedd.DotNetLab.sln --locked-mode "-p:DotNetLabBuildRoot=$buildRoot"
+          dotnet build Tedd.DotNetLab.sln -c Release --no-restore "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version"
+          dotnet pack Tedd.DotNetLab.sln -c Release --no-restore --output $nupkgDir "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version" -p:DotNetLabPackCrossPlatform=true
+          Get-ChildItem -LiteralPath $nupkgDir | Select-Object Name, Length
+
+      - name: Upload NuGet packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: |
+            ${{ runner.temp }}/nupkgs/*.nupkg
+            ${{ runner.temp }}/nupkgs/*.snupkg
+
+  publish-release:
+    needs: [build-windows-x64, build-linux-x64, pack-nuget]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Download release archives and NuGet packages
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Remove intermediate native staging files from dist
+        run: rm -f dist/Tedd.DotNetLab.Profiler.dll dist/Tedd.DotNetLab.Profiler.so
+
+      - name: Generate SHA256SUMS.txt
+        run: |
+          cd dist
+          sha256sum Tedd.DotNetLab* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release with archives and NuGet packages
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.tag }}
+          generate_release_notes: true
+          files: |
+            dist/Tedd.DotNetLab*
+            dist/SHA256SUMS.txt
+
+      - name: Publish packages to NuGet.org (when NUGET_API_KEY is configured)
+        if: (startsWith(github.ref, 'refs/tags/v') || inputs.publish_nuget == true) && env.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "dist/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Publish packages to GitHub Packages (optional)
+        if: inputs.publish_github_packages == true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push "dist/*.nupkg" --api-key "$GITHUB_TOKEN" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate

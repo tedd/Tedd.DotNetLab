@@ -1,0 +1,447 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "scenario_version": {
+      "type": "string"
+    },
+    "input_hash": {
+      "type": "string"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocks": {
+      "type": "integer"
+    },
+    "operations_per_run": {
+      "type": "integer"
+    },
+    "warmup_batches": {
+      "type": "integer"
+    },
+    "seed": {
+      "type": "string",
+      "pattern": "^(?:0|(?:[1-9][0-9]{0,18}|1[0-7][0-9]{18}|18[0-3][0-9]{17}|184[0-3][0-9]{16}|1844[0-5][0-9]{15}|18446[0-6][0-9]{14}|184467[0-3][0-9]{13}|1844674[0-3][0-9]{12}|184467440[0-6][0-9]{10}|1844674407[0-2][0-9]{9}|18446744073[0-6][0-9]{8}|1844674407370[0-8][0-9]{6}|18446744073709[0-4][0-9]{5}|184467440737095[0-4][0-9]{4}|18446744073709550[0-9]{3}|18446744073709551[0-5][0-9]{2}|1844674407370955160[0-9]{1}|1844674407370955161[0-4]|18446744073709551615))(?![\\s\\S])",
+      "maxLength": 20,
+      "description": "Canonical decimal exact integer; serialized output uses strings."
+    },
+    "profile": {
+      "type": "string"
+    },
+    "independent_blocks": {
+      "type": "boolean"
+    },
+    "independence_justification": {
+      "type": "string"
+    },
+    "confirmatory": {
+      "type": "boolean"
+    },
+    "maximum_duration_seconds": {
+      "type": "integer"
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "alpha_family": {
+          "type": "number",
+          "default": 0.05
+        },
+        "family_size": {
+          "type": "integer",
+          "default": 1
+        },
+        "equivalence_lower_ratio": {
+          "type": "number",
+          "default": 0.99
+        },
+        "equivalence_upper_ratio": {
+          "type": "number",
+          "default": 1.01
+        },
+        "useful_improvement_ratio": {
+          "type": "number",
+          "default": 0.99
+        },
+        "meaningful_regression_ratio": {
+          "type": "number",
+          "default": 1.01
+        },
+        "minimum_blocks": {
+          "type": "integer",
+          "default": 10
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "alpha_family",
+        "family_size",
+        "equivalence_lower_ratio",
+        "equivalence_upper_ratio",
+        "useful_improvement_ratio",
+        "meaningful_regression_ratio",
+        "minimum_blocks"
+      ]
+    },
+    "primary_metric": {
+      "type": "string",
+      "default": "scenario.ns_per_operation"
+    },
+    "fresh_normal_build": {
+      "type": "boolean",
+      "default": false
+    },
+    "guardrail_metrics": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "default": null
+    },
+    "guardrail_policies": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "observation_kind": {
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "lower_is_better",
+              "higher_is_better"
+            ]
+          },
+          "scale": {
+            "enum": [
+              "positive_ratio",
+              "absolute_difference"
+            ]
+          },
+          "equivalence_lower": {
+            "type": "number"
+          },
+          "equivalence_upper": {
+            "type": "number"
+          },
+          "useful_improvement": {
+            "type": "number"
+          },
+          "meaningful_regression": {
+            "type": "number"
+          },
+          "minimum_blocks": {
+            "type": "integer",
+            "default": 10
+          },
+          "descriptive_only": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "metric",
+          "unit",
+          "observation_kind",
+          "direction",
+          "scale",
+          "equivalence_lower",
+          "equivalence_upper",
+          "useful_improvement",
+          "meaningful_regression",
+          "minimum_blocks",
+          "descriptive_only"
+        ],
+        "additionalProperties": false
+      },
+      "default": null
+    },
+    "baseline": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^(?:0|(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)|-(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-7]|9223372036854775808))(?![\\s\\S])",
+          "maxLength": 20,
+          "description": "Canonical decimal exact integer; serialized output uses strings."
+        },
+        "hash": {
+          "type": "string"
+        },
+        "alias_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "alias_revision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(?:0|(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)|-(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-7]|9223372036854775808))(?![\\s\\S])",
+          "maxLength": 20,
+          "description": "Canonical decimal exact integer; serialized output uses strings.",
+          "default": null
+        },
+        "alias_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "sampling_policy": {
+          "type": "string",
+          "default": "fresh_matched_control_runs"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "hash",
+        "alias_id",
+        "alias_revision",
+        "alias_hash",
+        "sampling_policy"
+      ],
+      "additionalProperties": false,
+      "default": null
+    },
+    "factorial": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "variant00": {
+          "type": "string"
+        },
+        "variant10": {
+          "type": "string"
+        },
+        "variant01": {
+          "type": "string"
+        },
+        "variant11": {
+          "type": "string"
+        },
+        "component_a_id": {
+          "type": "string"
+        },
+        "component_b_id": {
+          "type": "string"
+        },
+        "combination_id": {
+          "type": "string"
+        },
+        "interaction_scales": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "absolute",
+              "log"
+            ]
+          }
+        }
+      },
+      "required": [
+        "variant00",
+        "variant10",
+        "variant01",
+        "variant11",
+        "component_a_id",
+        "component_b_id",
+        "combination_id",
+        "interaction_scales"
+      ],
+      "additionalProperties": false,
+      "default": null
+    },
+    "primary_policy": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "observation_kind": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "lower_is_better",
+            "higher_is_better"
+          ]
+        },
+        "scale": {
+          "enum": [
+            "positive_ratio",
+            "absolute_difference"
+          ]
+        },
+        "equivalence_lower": {
+          "type": "number"
+        },
+        "equivalence_upper": {
+          "type": "number"
+        },
+        "useful_improvement": {
+          "type": "number"
+        },
+        "meaningful_regression": {
+          "type": "number"
+        },
+        "minimum_blocks": {
+          "type": "integer",
+          "default": 10
+        },
+        "descriptive_only": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "metric",
+        "unit",
+        "observation_kind",
+        "direction",
+        "scale",
+        "equivalence_lower",
+        "equivalence_upper",
+        "useful_improvement",
+        "meaningful_regression",
+        "minimum_blocks",
+        "descriptive_only"
+      ],
+      "additionalProperties": false,
+      "default": null
+    },
+    "diagnostic_windows": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "residual_tolerance_milliseconds": {
+          "type": "number",
+          "default": 1
+        },
+        "parser_version": {
+          "type": "string",
+          "default": "traceevent-runtime/3"
+        },
+        "window_algorithm": {
+          "type": "string",
+          "default": "target-clock-window/v1"
+        }
+      },
+      "additionalProperties": false,
+      "default": null,
+      "required": [
+        "residual_tolerance_milliseconds",
+        "parser_version",
+        "window_algorithm"
+      ]
+    },
+    "compilation_control": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "result_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^(?:0|(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)|-(?:[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-7]|9223372036854775808))(?![\\s\\S])",
+          "maxLength": 20,
+          "description": "Canonical decimal exact integer; serialized output uses strings."
+        },
+        "record_hash": {
+          "type": "string"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "artifact_hash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "result_id",
+        "revision",
+        "record_hash",
+        "artifact_id",
+        "artifact_hash"
+      ],
+      "additionalProperties": false,
+      "default": null
+    },
+    "target_runtime_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "scenario_id",
+    "scenario_version",
+    "input_hash",
+    "variants",
+    "blocks",
+    "operations_per_run",
+    "warmup_batches",
+    "seed",
+    "profile",
+    "independent_blocks",
+    "independence_justification",
+    "confirmatory",
+    "maximum_duration_seconds",
+    "analysis",
+    "primary_metric",
+    "fresh_normal_build",
+    "guardrail_metrics"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dotnetlab://schemas/v1/plan",
+  "$comment": "dotnetlab-wire-schema/v1; output shape for Wire.Version=1.0. Authorization, provenance, finite arithmetic, lifecycle, and cross-field domain validation remain required."
+}

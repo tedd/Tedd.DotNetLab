@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><IsTestProject>true</IsTestProject><IsPackable>false</IsPackable></PropertyGroup>
+<Target Name="TestSdkIdentity" BeforeTargets="GetAssemblyAttributes">
+  <ItemGroup><AssemblyMetadata Include="TestSdkVersion" Value="$(NETCoreSdkVersion)" /></ItemGroup>
+</Target>
+<ItemGroup>
+<ProjectReference Include="../../src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj" />
+<ProjectReference Include="../../src\Tedd.DotNetLab.Application\Tedd.DotNetLab.Application.csproj" />
+<ProjectReference Include="../../src\Tedd.DotNetLab.Mcp\Tedd.DotNetLab.Mcp.csproj" />
+<ProjectReference Include="../../src\Tedd.DotNetLab.Probes\Tedd.DotNetLab.Probes.csproj" />
+<ProjectReference Include="../Tedd.DotNetLab.StatisticalQualification/Tedd.DotNetLab.StatisticalQualification.csproj" />
+<ProjectReference Include="../../samples/LabWorkload/LabWorkload.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../Tedd.DotNetLab.ControllerFault/Tedd.DotNetLab.ControllerFault.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../Tedd.DotNetLab.NormalBaseline/Tedd.DotNetLab.NormalBaseline.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../Tedd.DotNetLab.NormalCandidate/Tedd.DotNetLab.NormalCandidate.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../Tedd.DotNetLab.ParserFault/Tedd.DotNetLab.ParserFault.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../../tools/Tedd.DotNetLab.PackageHashes/Tedd.DotNetLab.PackageHashes.csproj" ReferenceOutputAssembly="false" />
+<PackageReference Include="Microsoft.NET.Test.Sdk" />
+<PackageReference Include="xunit" />
+<PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+<Content Include="..\Fixtures\statistics\golden.json" Link="Fixtures\statistics\golden.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\quantile-cluster-golden.json" Link="Fixtures\statistics\quantile-cluster-golden.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\native-series-golden.json" Link="Fixtures\statistics\native-series-golden.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\native_series_reference.py" Link="Fixtures\statistics\native_series_reference.py" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\native-series-simulation-results.json" Link="Fixtures\statistics\native-series-simulation-results.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\native-series-simulation-oracle.json" Link="Fixtures\statistics\native-series-simulation-oracle.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\simulation-plan.json" Link="Fixtures\statistics\simulation-plan.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\simulation-oracle.json" Link="Fixtures\statistics\simulation-oracle.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\simulation-results.json" Link="Fixtures\statistics\simulation-results.json" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\Fixtures\statistics\simulation_reference.py" Link="Fixtures\statistics\simulation_reference.py" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\..\schemas\api\v1\*.schema.json" Link="Schemas\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\schema_contract_reference.py" Link="schema_contract_reference.py" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\windows_package_tests.py" Link="tests\windows_package_tests.py" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="..\..\tools\windows_package.py" Link="tools\windows_package.py" CopyToOutputDirectory="PreserveNewest" />
+</ItemGroup></Project>

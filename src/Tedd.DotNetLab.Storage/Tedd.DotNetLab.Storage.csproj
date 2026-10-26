@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup></PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Contracts\Tedd.DotNetLab.Contracts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Domain\Tedd.DotNetLab.Domain.csproj" />
+<PackageReference Include="Microsoft.Data.Sqlite" />
+<EmbeddedResource Include="Migrations\*.sql" />
+</ItemGroup></Project>

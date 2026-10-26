@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><Description>Optional bounded synchronous invocation probe helper.</Description></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Tedd.DotNetLab.Harness/Tedd.DotNetLab.Harness.csproj" /></ItemGroup>
+</Project>

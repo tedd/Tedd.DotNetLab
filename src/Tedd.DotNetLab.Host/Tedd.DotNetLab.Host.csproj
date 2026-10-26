@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+  <OutputType>Exe</OutputType>
+  <RollForward>Major</RollForward>
+  <PackAsTool>true</PackAsTool>
+  <ToolCommandName>dotnetlab</ToolCommandName>
+  <PackageId>Tedd.DotNetLab</PackageId>
+  <Description>CLI, MCP server, and AI agent skill installer for Tedd.DotNetLab (.NET profiling, benchmarking, and performance experimentation laboratory for Codex, Claude Code, Cursor, and Antigravity).</Description>
+</PropertyGroup>
+<ItemGroup>
+<InternalsVisibleTo Include="Tedd.DotNetLab.Tests" />
+<ProjectReference Include="..\Tedd.DotNetLab.Mcp\Tedd.DotNetLab.Mcp.csproj" />
+<Content Include="$(DotNetLabBuildRoot)/native/Tedd.DotNetLab.Profiler.dll" Condition="Exists('$(DotNetLabBuildRoot)/native/Tedd.DotNetLab.Profiler.dll') and ('$(OS)' == 'Windows_NT' or '$(DotNetLabPackCrossPlatform)' == 'true')" Link="Tedd.DotNetLab.Profiler.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Pack="false" />
+<Content Include="$(DotNetLabBuildRoot)/native/Tedd.DotNetLab.Profiler.so" Condition="Exists('$(DotNetLabBuildRoot)/native/Tedd.DotNetLab.Profiler.so') and ('$(OS)' != 'Windows_NT' or '$(DotNetLabPackCrossPlatform)' == 'true')" Link="Tedd.DotNetLab.Profiler.so" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Pack="false" />
+<Content Include="..\..\skills\dotnetlab\**" Link="skills\dotnetlab\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Pack="false" />
+
+</ItemGroup></Project>

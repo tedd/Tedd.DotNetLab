@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
+    <RollForward>Disable</RollForward>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DotNetLabBuildRoot Condition="'$(DotNetLabBuildRoot)' == '' and '$(OS)' == 'Windows_NT'">D:/Workspaces/AI/dotnetlab-implementation</DotNetLabBuildRoot>
+    <DotNetLabBuildRoot Condition="'$(DotNetLabBuildRoot)' == '' and '$(OS)' != 'Windows_NT'">/mnt/d/Workspaces/AI/dotnetlab-implementation/linux</DotNetLabBuildRoot>
+    <BaseIntermediateOutputPath>$(DotNetLabBuildRoot)/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(DotNetLabBuildRoot)/bin/$(MSBuildProjectName)/</BaseOutputPath>
+  </PropertyGroup>
+</Project>

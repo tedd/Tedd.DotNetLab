@@ -1,0 +1,468 @@
+{
+  "version": "statistical-simulation/v1",
+  "experiments": 10000,
+  "sample_algorithm": "splitmix64-open52-boxmuller-discard/v1",
+  "alpha": 0.05,
+  "resamples": 1000,
+  "quantile": 0.5,
+  "frames_per_cluster": 2,
+  "acceptance_method": "scipy-binom-equal-tail-bonferroni/v1",
+  "acceptance_family_error": 0.001,
+  "designs": [
+    {
+      "id": "normal_null",
+      "kind": "paired",
+      "seed": "700001",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.05,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "normal_useful",
+      "kind": "paired",
+      "seed": "804730",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": -0.040821994520255166,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "improved",
+          "probability": 0.9999999999459158,
+          "minimum": 10000,
+          "maximum": 10000
+        }
+      ]
+    },
+    {
+      "id": "equivalence_lower_boundary",
+      "kind": "paired",
+      "seed": "909459",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": -0.01005033585350145,
+      "sigma": 0.01,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "equivalent",
+          "probability": 0.05000000000000006,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "equivalence_upper_boundary",
+      "kind": "paired",
+      "seed": "1014188",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.009950330853168092,
+      "sigma": 0.01,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "equivalent",
+          "probability": 0.05000000000000006,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "equivalence_inside",
+      "kind": "paired",
+      "seed": "1118917",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.01,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "equivalent",
+          "probability": 0.9998966099016218,
+          "minimum": 9992,
+          "maximum": 10000
+        }
+      ]
+    },
+    {
+      "id": "equivalence_outside_lower",
+      "kind": "paired",
+      "seed": "1223646",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": -0.015113637810048184,
+      "sigma": 0.01,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "equivalent",
+          "probability": 4.317285534246704e-06,
+          "minimum": 0,
+          "maximum": 3
+        }
+      ]
+    },
+    {
+      "id": "equivalence_outside_upper",
+      "kind": "paired",
+      "seed": "1328375",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.014888612493750559,
+      "sigma": 0.01,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "equivalent",
+          "probability": 5.946430313177029e-06,
+          "minimum": 0,
+          "maximum": 3
+        }
+      ]
+    },
+    {
+      "id": "unequal_variance_welch",
+      "kind": "welch",
+      "seed": "1433104",
+      "size": 32,
+      "candidate_size": 48,
+      "mean": 0.0,
+      "sigma": 0.01,
+      "candidate_sigma": 0.08,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.05,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "normal_additive",
+      "kind": "additive",
+      "seed": "1537833",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 2.0,
+      "candidate_sigma": 2.0,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.05,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "student3_heavy_tail",
+      "kind": "heavy_tail",
+      "seed": "1642562",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 1,
+      "qualified_assumptions": false,
+      "criteria": []
+    },
+    {
+      "id": "symmetric_outliers",
+      "kind": "outliers",
+      "seed": "1747291",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 1,
+      "qualified_assumptions": false,
+      "criteria": []
+    },
+    {
+      "id": "ar1_unresolved_dependence",
+      "kind": "autocorrelation",
+      "seed": "1852020",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 1,
+      "qualified_assumptions": false,
+      "criteria": []
+    },
+    {
+      "id": "session_cluster_means",
+      "kind": "session_clusters",
+      "seed": "1956749",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.01,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.05,
+          "minimum": 411,
+          "maximum": 594
+        }
+      ]
+    },
+    {
+      "id": "fixed_family_five",
+      "kind": "family",
+      "seed": "2061478",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.02,
+      "candidate_sigma": 0.02,
+      "family_size": 5,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.9509900498999999,
+          "minimum": 9417,
+          "maximum": 9598
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.04900995010000009,
+          "minimum": 402,
+          "maximum": 583
+        }
+      ]
+    },
+    {
+      "id": "adaptive_winner_fresh_confirmation",
+      "kind": "winner",
+      "seed": "2166207",
+      "size": 32,
+      "candidate_size": 32,
+      "mean": 0.0,
+      "sigma": 0.04,
+      "candidate_sigma": 0.04,
+      "family_size": 5,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        },
+        {
+          "counter": "difference_rejected",
+          "probability": 0.05,
+          "minimum": 411,
+          "maximum": 594
+        },
+        {
+          "counter": "blocked",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        }
+      ]
+    },
+    {
+      "id": "paired_cluster_median",
+      "kind": "quantile_clusters",
+      "seed": "2270936",
+      "size": 100,
+      "candidate_size": 100,
+      "mean": 0.0,
+      "sigma": 5.0,
+      "candidate_sigma": 5.0,
+      "family_size": 1,
+      "qualified_assumptions": true,
+      "criteria": [
+        {
+          "counter": "coverage",
+          "probability": 0.95,
+          "minimum": 9406,
+          "maximum": 9589
+        },
+        {
+          "counter": "usable",
+          "probability": 1.0,
+          "minimum": 10000,
+          "maximum": 10000
+        }
+      ]
+    }
+  ]
+}

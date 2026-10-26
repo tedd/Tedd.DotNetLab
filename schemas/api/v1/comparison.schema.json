@@ -1,0 +1,424 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "estimator": {
+      "type": "string"
+    },
+    "effect_class": {
+      "enum": [
+        "improved",
+        "regressed",
+        "equivalent_within_margin",
+        "inconclusive",
+        "not_comparable",
+        "invalid"
+      ]
+    },
+    "quality": {
+      "type": "string"
+    },
+    "independent_blocks": {
+      "type": "integer"
+    },
+    "ratio": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "change_percent": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "standard_error": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "degrees_of_freedom": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "difference_interval_ratio": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "lower": {
+          "type": "number"
+        },
+        "upper": {
+          "type": "number"
+        },
+        "coverage": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "equivalence_interval_ratio": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "lower": {
+          "type": "number"
+        },
+        "upper": {
+          "type": "number"
+        },
+        "coverage": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "difference_p": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "tost_p": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "equivalence_passed": {
+      "type": "boolean"
+    },
+    "alpha_local": {
+      "type": "number"
+    },
+    "promotion_eligible": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "run_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "objective_vector_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "primary_effect": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "metric": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "observation_kind": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "properties": {
+            "metric": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            },
+            "observation_kind": {
+              "type": "string"
+            },
+            "direction": {
+              "enum": [
+                "lower_is_better",
+                "higher_is_better"
+              ]
+            },
+            "scale": {
+              "enum": [
+                "positive_ratio",
+                "absolute_difference"
+              ]
+            },
+            "equivalence_lower": {
+              "type": "number"
+            },
+            "equivalence_upper": {
+              "type": "number"
+            },
+            "useful_improvement": {
+              "type": "number"
+            },
+            "meaningful_regression": {
+              "type": "number"
+            },
+            "minimum_blocks": {
+              "type": "integer",
+              "default": 10
+            },
+            "descriptive_only": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "metric",
+            "unit",
+            "observation_kind",
+            "direction",
+            "scale",
+            "equivalence_lower",
+            "equivalence_upper",
+            "useful_improvement",
+            "meaningful_regression",
+            "minimum_blocks",
+            "descriptive_only"
+          ],
+          "additionalProperties": false
+        },
+        "estimator": {
+          "type": "string"
+        },
+        "availability": {
+          "enum": [
+            "available",
+            "partial",
+            "not_collected",
+            "not_supported",
+            "not_applicable",
+            "invalid",
+            "artifact_expired"
+          ]
+        },
+        "effect_class": {
+          "enum": [
+            "improved",
+            "regressed",
+            "equivalent_within_margin",
+            "inconclusive",
+            "not_comparable",
+            "invalid"
+          ]
+        },
+        "quality": {
+          "type": "string"
+        },
+        "independent_blocks": {
+          "type": "integer"
+        },
+        "effect": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "effect_unit": {
+          "type": "string"
+        },
+        "standard_error": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "standard_error_scale": {
+          "type": "string"
+        },
+        "degrees_of_freedom": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "difference_interval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "lower": {
+              "type": "number"
+            },
+            "upper": {
+              "type": "number"
+            },
+            "coverage": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lower",
+            "upper",
+            "coverage"
+          ],
+          "additionalProperties": false
+        },
+        "equivalence_interval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "lower": {
+              "type": "number"
+            },
+            "upper": {
+              "type": "number"
+            },
+            "coverage": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lower",
+            "upper",
+            "coverage"
+          ],
+          "additionalProperties": false
+        },
+        "difference_p": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tost_p": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "equivalence_passed": {
+          "type": "boolean"
+        },
+        "non_inferiority_passed": {
+          "type": "boolean"
+        },
+        "alpha_family": {
+          "type": "number"
+        },
+        "alpha_local": {
+          "type": "number"
+        },
+        "family_size": {
+          "type": "integer"
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "run_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "metric",
+        "unit",
+        "observation_kind",
+        "scope",
+        "policy",
+        "estimator",
+        "availability",
+        "effect_class",
+        "quality",
+        "independent_blocks",
+        "effect",
+        "effect_unit",
+        "standard_error",
+        "standard_error_scale",
+        "degrees_of_freedom",
+        "difference_interval",
+        "equivalence_interval",
+        "difference_p",
+        "tost_p",
+        "equivalence_passed",
+        "non_inferiority_passed",
+        "alpha_family",
+        "alpha_local",
+        "family_size",
+        "reason_codes",
+        "assumptions",
+        "run_ids"
+      ],
+      "additionalProperties": false,
+      "default": null
+    },
+    "input_run_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "estimator",
+    "effect_class",
+    "quality",
+    "independent_blocks",
+    "ratio",
+    "change_percent",
+    "standard_error",
+    "degrees_of_freedom",
+    "difference_interval_ratio",
+    "equivalence_interval_ratio",
+    "difference_p",
+    "tost_p",
+    "equivalence_passed",
+    "alpha_local",
+    "promotion_eligible",
+    "reason_codes",
+    "run_ids"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dotnetlab://schemas/v1/comparison",
+  "$comment": "dotnetlab-wire-schema/v1; output shape for Wire.Version=1.0. Authorization, provenance, finite arithmetic, lifecycle, and cross-field domain validation remain required."
+}

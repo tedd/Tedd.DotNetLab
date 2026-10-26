@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <PropertyGroup Condition="'$(DotNetLabNet11Qualification)' == 'true'">
+    <TargetFramework>net11.0</TargetFramework><NuGetLockFilePath>$(BaseIntermediateOutputPath)net11.packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Tedd.DotNetLab.Harness/Tedd.DotNetLab.Harness.csproj" />
+    <Compile Include="../Fixtures/normal-build/Program.cs" Link="Program.cs" />
+  </ItemGroup>
+</Project>

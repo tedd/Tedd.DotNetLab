@@ -1,0 +1,99 @@
+name: CI Build & NuGet Packages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-windows-x64:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and test native Windows CoreCLR profiler
+        shell: pwsh
+        run: ./native/build-native.ps1 -BuildRoot "${{ runner.temp }}/dotnetlab-build/native"
+
+      - name: Upload Windows native profiler
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-windows-x64
+          path: ${{ runner.temp }}/dotnetlab-build/native/Tedd.DotNetLab.Profiler.dll
+
+  native-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build libssl-dev
+
+      - name: Build and test native Linux CoreCLR profiler
+        run: |
+          cmake -S native -B "${{ runner.temp }}/dotnetlab-build/native" -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
+          cmake --build "${{ runner.temp }}/dotnetlab-build/native"
+          ctest --test-dir "${{ runner.temp }}/dotnetlab-build/native" --output-on-failure
+
+      - name: Upload Linux native profiler
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-linux-x64
+          path: ${{ runner.temp }}/dotnetlab-build/native/Tedd.DotNetLab.Profiler.so
+
+  build-test-pack:
+    needs: [native-windows-x64, native-linux-x64]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Stage native profilers
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/dotnetlab-build/native
+          merge-multiple: true
+
+      - name: Restore and build solution
+        shell: pwsh
+        run: |
+          $buildRoot = "${{ runner.temp }}/dotnetlab-build"
+          dotnet restore Tedd.DotNetLab.sln --locked-mode "-p:DotNetLabBuildRoot=$buildRoot"
+          dotnet build Tedd.DotNetLab.sln -c Release --no-restore "-p:DotNetLabBuildRoot=$buildRoot"
+
+      - name: Run verification tests
+        shell: pwsh
+        env:
+          DOTNETLAB_TEST_BUILD_ROOT: ${{ runner.temp }}/dotnetlab-build
+        run: |
+          dotnet test tests/Tedd.DotNetLab.Tests/Tedd.DotNetLab.Tests.csproj -c Release --no-build "-p:DotNetLabBuildRoot=${{ runner.temp }}/dotnetlab-build" --filter "FullyQualifiedName~InstallerTests|FullyQualifiedName~ControllerRuntimeTests|FullyQualifiedName~CompatibilityReportTests|FullyQualifiedName~FoundationTests"
+
+      - name: Pack NuGet packages (.nupkg & .snupkg)
+        shell: pwsh
+        run: |
+          $buildRoot = "${{ runner.temp }}/dotnetlab-build"
+          $nupkgDir = "${{ runner.temp }}/nupkgs"
+          New-Item -ItemType Directory -Path $nupkgDir -Force | Out-Null
+          dotnet pack Tedd.DotNetLab.sln -c Release --no-restore --output $nupkgDir "-p:DotNetLabBuildRoot=$buildRoot" -p:DotNetLabPackCrossPlatform=true
+          Get-ChildItem -LiteralPath $nupkgDir | Select-Object Name, Length
+
+      - name: Upload NuGet build packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: |
+            ${{ runner.temp }}/nupkgs/*.nupkg
+            ${{ runner.temp }}/nupkgs/*.snupkg

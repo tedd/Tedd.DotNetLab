@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup></PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Contracts\Tedd.DotNetLab.Contracts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Domain\Tedd.DotNetLab.Domain.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Artifacts\Tedd.DotNetLab.Artifacts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Storage\Tedd.DotNetLab.Storage.csproj" />
+<PackageReference Include="Microsoft.Diagnostics.NETCore.Client" />
+</ItemGroup></Project>

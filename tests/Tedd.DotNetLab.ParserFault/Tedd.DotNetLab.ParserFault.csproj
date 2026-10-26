@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Tedd.DotNetLab.Analysis.Runtime\Tedd.DotNetLab.Analysis.Runtime.csproj" />
+    <ProjectReference Include="..\..\src\Tedd.DotNetLab.Transport.Local\Tedd.DotNetLab.Transport.Local.csproj" />
+  </ItemGroup>
+</Project>

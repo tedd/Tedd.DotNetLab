@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+  <Description>Core wire contracts, target identities, capabilities, and runtime discovery models for Tedd.DotNetLab.</Description>
+</PropertyGroup>
+<ItemGroup>
+
+
+</ItemGroup></Project>

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup></PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Application\Tedd.DotNetLab.Application.csproj" />
+<PackageReference Include="ModelContextProtocol" />
+<PackageReference Include="Microsoft.Extensions.Hosting" />
+</ItemGroup></Project>

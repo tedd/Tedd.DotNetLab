@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup></PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Contracts\Tedd.DotNetLab.Contracts.csproj" />
+<PackageReference Include="Iced" />
+</ItemGroup></Project>

@@ -1,0 +1,263 @@
+{
+  "schema_version": "native-call-context/v1",
+  "runtime": "11.0.0-rc.2.26504.105",
+  "sources": [
+    {
+      "file": "proftoeeinterfaceimpl.cpp",
+      "url": "https://raw.githubusercontent.com/dotnet/runtime/v11.0.0-rc.2.26504.105/src/coreclr/vm/proftoeeinterfaceimpl.cpp",
+      "sha256": "49b861a3a2a8eb3dc3f75707869bf7d668845b6caa00b59b7596462d3fe13b0a"
+    },
+    {
+      "file": "rejit.cpp",
+      "url": "https://raw.githubusercontent.com/dotnet/runtime/v11.0.0-rc.2.26504.105/src/coreclr/vm/rejit.cpp",
+      "sha256": "f0e17c42f26582f332b71ba24525420841fb44c54eecc4c7d7e4036b403f4bc5"
+    }
+  ],
+  "info_apis": [
+    {
+      "api": "InitializeCurrentThread",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetRuntimeInformation",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "SetEventMask2",
+      "entrypoint": "ASYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "startup_or_windows_attach_initialize",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "EnumModules",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach",
+        "kP2EETriggers"
+      ],
+      "gc_contract": "GC_TRIGGERS",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetModuleInfo2",
+      "entrypoint": "ASYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetModuleMetaData",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetFunctionFromToken",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetFunctionInfo",
+      "entrypoint": "ASYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetILFunctionBody",
+      "entrypoint": "ASYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetReJITIDs",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach",
+        "kP2EETriggers"
+      ],
+      "gc_contract": "GC_TRIGGERS",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetNativeCodeStartAddresses",
+      "entrypoint": "ASYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetCodeInfo4",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "GetILToNativeMapping3",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach"
+      ],
+      "gc_contract": "DISABLED_GC_NOTRIGGER",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "EnumNgenModuleMethodsInliningThisMethod",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EETriggers"
+      ],
+      "gc_contract": "GC_TRIGGERS",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "RequestReJITWithInliners",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach",
+        "kP2EETriggers"
+      ],
+      "gc_contract": "GC_TRIGGERS",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    },
+    {
+      "api": "RequestRevert",
+      "entrypoint": "SYNC",
+      "flags": [
+        "kP2EEAllowableAfterAttach",
+        "kP2EETriggers"
+      ],
+      "gc_contract": "GC_TRIGGERS",
+      "project_context": "registered_worker",
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    }
+  ],
+  "function_control_apis": [
+    {
+      "api": "SetILFunctionBody",
+      "project_context": "GetReJITParameters",
+      "gc_contract": "GC_NOTRIGGER",
+      "retains_control_pointer": false,
+      "platforms": [
+        "windows-x64",
+        "linux-x64"
+      ]
+    }
+  ],
+  "callback_policy": {
+    "JITCompilationStarted": "increment_observation_epoch",
+    "JITCompilationFinished": "increment_observation_epoch",
+    "ModuleLoadFinished": "increment_observation_epoch",
+    "ModuleUnloadStarted": "increment_observation_epoch",
+    "JITInlining": "record_bounded_caller_graph",
+    "GetReJITParameters": "publish_prevalidated_body_with_callback_control",
+    "ReJITCompilationStarted": "record_bounded_version_identity",
+    "ReJITCompilationFinished": "record_compilation_result",
+    "ReJITError": "taint_mutation",
+    "Shutdown": "cancel_and_join_worker"
+  },
+  "integration_fixtures": [
+    "NativeStartupTests",
+    "PlatformSnapshotTests",
+    "LiveProfilerTests",
+    "RejitTests",
+    "InlinerTests",
+    "MutationRecoveryTests"
+  ],
+  "qualification": "Startup only. Runtime entrypoint allowances are not product attach certification. GC_TRIGGERS and disabled GC_NOTRIGGER contracts preclude a no-GC guarantee. No runtime suspension is used."
+}

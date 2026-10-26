@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../samples/LabWorkload/*.cs" Link="%(Filename)%(Extension)" />
+    <ProjectReference Include="../../src/Tedd.DotNetLab.Harness/Tedd.DotNetLab.Harness.csproj" />
+    <ProjectReference Include="../../src/Tedd.DotNetLab.Probes/Tedd.DotNetLab.Probes.csproj" />
+  </ItemGroup>
+</Project>

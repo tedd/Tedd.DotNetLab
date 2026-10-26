@@ -1,0 +1,31 @@
+{
+  "plan_hash": "f33ee06b3765ca0cc08fd25cd29a3ec88ad81e6be62bf5f942a85604c3e3d4d9",
+  "generator": "Python 3.14.7; NumPy 2.5.2; SciPy 1.18.0",
+  "generator_hash": "3980339d295712212192f79ad246545449ab5269d352343e2612a26f73b99dba",
+  "designs": [
+    {
+      "id": "session_cluster_means",
+      "counters": {
+        "coverage": 9524,
+        "difference_rejected": 476,
+        "equivalent": 6652,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9964288702144158,
+        "lower": 0.9884317327870139,
+        "upper": 1.004490710347034,
+        "difference_p": 0.3722027873977537,
+        "tost_p": 0.055739689903826606
+      }
+    }
+  ]
+}

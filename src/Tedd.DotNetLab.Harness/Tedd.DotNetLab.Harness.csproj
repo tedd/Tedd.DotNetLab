@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+  <Description>Cooperative in-process benchmark and scenario execution harness for Tedd.DotNetLab.</Description>
+</PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Contracts\Tedd.DotNetLab.Contracts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Transport.Local\Tedd.DotNetLab.Transport.Local.csproj" />
+
+</ItemGroup></Project>

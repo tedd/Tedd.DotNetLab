@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "error"
+    },
+    "data": {
+      "type": "null"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "recovery": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2048
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "data",
+    "code",
+    "message",
+    "recovery"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dotnetlab://schemas/v1/error",
+  "$comment": "dotnetlab-wire-schema/v1; output shape for Wire.Version=1.0. Authorization, provenance, finite arithmetic, lifecycle, and cross-field domain validation remain required."
+}

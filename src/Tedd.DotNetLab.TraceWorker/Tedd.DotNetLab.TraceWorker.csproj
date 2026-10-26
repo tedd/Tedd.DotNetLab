@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Tedd.DotNetLab.Analysis.Runtime\Tedd.DotNetLab.Analysis.Runtime.csproj" />
+    <ProjectReference Include="..\Tedd.DotNetLab.Transport.Local\Tedd.DotNetLab.Transport.Local.csproj" />
+    <Content Include="$(OutputPath)$(AssemblyName).runtimeconfig.json" Link="$(AssemblyName).runtimeconfig.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Pack="false" />
+    <Content Include="$(OutputPath)$(AssemblyName).deps.json" Link="$(AssemblyName).deps.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Pack="false" />
+  </ItemGroup>
+</Project>

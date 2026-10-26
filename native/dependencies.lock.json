@@ -1,0 +1,209 @@
+{
+  "coreclr_version": "10.0.12",
+  "files": [
+    {
+      "path": "native/vendor/coreclr/cor.h",
+      "sha256": "8be143fbedafa9ccc27bc8dbf1e292046fbe3c1e902d808bb9aa289f53a2cde8"
+    },
+    {
+      "path": "native/vendor/coreclr/corerror.h",
+      "sha256": "852b0559ce5d040abaf35f0f03c59da23c5e2ed9559188a0d9648da8bc2805e0"
+    },
+    {
+      "path": "native/vendor/coreclr/corhdr.h",
+      "sha256": "ac7eca591deb91f913d77f6877386a986bdfd9f8bab342e660d2fc26e7d212f4"
+    },
+    {
+      "path": "native/vendor/coreclr/corprof.h",
+      "sha256": "6892e8f1c8492290d19cd9c9b3f73d840f02b05cdcee8ba344ab3614ad66406a"
+    },
+    {
+      "path": "native/vendor/coreclr/LICENSE.TXT",
+      "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310"
+    },
+    {
+      "path": "native/vendor/nlohmann/json.hpp",
+      "sha256": "aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63"
+    },
+    {
+      "path": "native/vendor/nlohmann/LICENSE.MIT",
+      "sha256": "46a65cffd1ea955132d95a8dd921640714a8d6b537d2e4e482d31145ae95b603"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/corprof_i.cpp",
+      "sha256": "61146bddb873c68d5e998d6a52f57b942c7cade6c04015830432c896070b03a7",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/prebuilt/idl/corprof_i.cpp"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/corprof.h",
+      "sha256": "6892e8f1c8492290d19cd9c9b3f73d840f02b05cdcee8ba344ab3614ad66406a",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/prebuilt/inc/corprof.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/debugmacrosext.h",
+      "sha256": "d28646cc17bb53f15a429840db1ff2d3b126e22ddefa1d2cbc1126e1b3fa3739",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/inc/debugmacrosext.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/guiddef.h",
+      "sha256": "6ffed6753f4bc494bed10d874845488cce5f256216bb9355c1510dacf1a43bb7",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/guiddef.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/minipal/guid.h",
+      "sha256": "4d824a9b7e37a259e85e169ba17a6c6eb55e4065f3b5c4f6c458c342d5f1628c",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/native/minipal/guid.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/minipal/utils.h",
+      "sha256": "8333e5651ae3fd5e80127fb40b9608fdedc71b5419d3695418c09bfddc48fb86",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/native/minipal/utils.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/no_sal2.h",
+      "sha256": "ff879f728cc55b6f1f05d66065dcaa47fb5931686d19ddeee1485f7462db0425",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/no_sal2.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/ntimage.h",
+      "sha256": "551b49cd5618af6c89b50193600ce54d6ed1876a527559298d0aa43e5b941a66",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/ntimage.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/objidl.h",
+      "sha256": "41dde1b97ea2180c79bf3c39527a47eb0c40f29313b42f8484f1c844c85c9dca",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/objidl.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/ole2.h",
+      "sha256": "9d80a708fed4e69eb3920eb1af3701c029de863bfd4769cfd66f5a25b3d7e81f",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/ole2.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pal_assert.h",
+      "sha256": "f0383c6522a318f542178936a3c755ab028b21663a13104d3507f7cadf03d450",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/pal_assert.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pal_endian.h",
+      "sha256": "0475727970529fb39376b05a44f2a245728f15bed26ec179495107889f5c9ede",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/pal_endian.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pal_error.h",
+      "sha256": "8013c399849998d7ad06b62591c0d13cbe1b063f45707133389234ad63a215ea",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/pal_error.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pal_mstypes.h",
+      "sha256": "25b635827cc77c70e10dcf5d0e6c4f0d0ea9815b1cc6176c48e743287d6c3bda",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/pal_mstypes.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pal.h",
+      "sha256": "dbe48f91eabaaf86e7918b2c5e7d9205572fd0f8d10bdc2c509de95be4459d34",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/pal.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/palrt.h",
+      "sha256": "eddc22748efbb52c6e270f14ef37d8b4909e0df9f361ff807b88cb5bfe93b663",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/palrt.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/poppack.h",
+      "sha256": "dd47b110e21380a6cd4b9c8c2bc499e407be9b756991c7ff5e034c409fd6534e",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/poppack.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pshpack1.h",
+      "sha256": "57288463da4691a2719269b6592f3bbcc64de1fd1d258e034c1d64e6e18afff7",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/pshpack1.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pshpack2.h",
+      "sha256": "5f63b04a50e55a37c0498cf555649b6d7cac9a9ed7b04426d3a97a33557a3727",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/pshpack2.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pshpack4.h",
+      "sha256": "9233cf429033e386e0cb7acbeb4e9a98d74aad2854b1adc27b9dc3ee73748494",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/pshpack4.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/pshpack8.h",
+      "sha256": "51c09707cb26e199dcd39ac06900e3c7bde382ffdcad7e715d3b2ffc048edbb6",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/pshpack8.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/rpc.h",
+      "sha256": "c165cabe42c54f8d0a491502fe52b00c4822a456e086db791cfb97621a81b3f3",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/rpc.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/rpcndr.h",
+      "sha256": "76d85e544d733e10cdf070bc4751d7f3dbb0bb6ef5f18f5c53752dff358fe600",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/rpcndr.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/safecrt.h",
+      "sha256": "a6ef799d07fe94b411833e04296563aaa92f256e270a0d9abffbca398a74735d",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/safecrt.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/safemath.h",
+      "sha256": "f1733aac59eb097fc44c8d7f8f2d66e1111484032def605601ce5b130f59fd21",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/inc/safemath.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/sal.h",
+      "sha256": "e26ee611231a859b5a800eb2e1606e7ca03b8e3981d7c98cf1ca20c89b658b68",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/sal.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/servprov.h",
+      "sha256": "664e93566615aa9ff5befb5cbaf0a099e72567e5d5f795da3f69116a2b2a4a27",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/servprov.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/specstrings_strict.h",
+      "sha256": "51169c2158fcd42ec351eb5a6ce9180dc3d51b24e87b03f2f9e5516c72ed875b",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/specstrings_strict.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/specstrings_undef.h",
+      "sha256": "a00f0815672c9ba446f347387b8bafff24430ff4d2bd9bdd9f891b56a6e20f80",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/specstrings_undef.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/specstrings.h",
+      "sha256": "dbcb1648ff2b9bfda066963bae3d5a8bd3d7780ad45bf4e80eb3e462699e3248",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/specstrings.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/static_assert.h",
+      "sha256": "c2e7a783c2e3e7a8ae779a1d20d4212f9f5498e1d75df80a4d1db404e0a01a01",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/inc/static_assert.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/unknwn.h",
+      "sha256": "d89a229f9552f46efcec1fba3d191e61c21392be000141de853b099390bd5aa0",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/unknwn.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/windows.h",
+      "sha256": "2e892a158bf818a094b45b4ba7358f1b12b10c0f747fa4c36e2670c1ed3e460c",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/windows.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/winerror.h",
+      "sha256": "5d01568d4bb7fa05557813697de2655da55bb30b9b4c5dee858ef9f7cfa2610b",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/src/coreclr/pal/inc/rt/winerror.h"
+    },
+    {
+      "path": "native/vendor/coreclr-pal/LICENSE.TXT",
+      "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310",
+      "source": "https://raw.githubusercontent.com/dotnet/runtime/v10.0.12/LICENSE.TXT"
+    }
+  ],
+  "json_version": "3.12.0"
+}

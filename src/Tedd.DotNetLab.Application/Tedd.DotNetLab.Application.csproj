@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup></PropertyGroup>
+<ItemGroup>
+<ProjectReference Include="..\Tedd.DotNetLab.Contracts\Tedd.DotNetLab.Contracts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Domain\Tedd.DotNetLab.Domain.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Artifacts\Tedd.DotNetLab.Artifacts.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Storage\Tedd.DotNetLab.Storage.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Harness\Tedd.DotNetLab.Harness.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Collector.EventPipe\Tedd.DotNetLab.Collector.EventPipe.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Analysis.Runtime\Tedd.DotNetLab.Analysis.Runtime.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Analysis.Statistics\Tedd.DotNetLab.Analysis.Statistics.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Analysis.Native\Tedd.DotNetLab.Analysis.Native.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.Probes\Tedd.DotNetLab.Probes.csproj" />
+<ProjectReference Include="..\Tedd.DotNetLab.TraceWorker\Tedd.DotNetLab.TraceWorker.csproj" />
+
+</ItemGroup>
+<Target Name="DotNetLabCompatibilityBuildPins" BeforeTargets="GetAssemblyAttributes">
+  <ItemGroup>
+    <AssemblyMetadata Include="Tedd.DotNetLab.CoreClr" Value="$([MSBuild]::ValueOrDefault('$(RuntimeFrameworkVersion)', '$(BundledNETCoreAppPackageVersion)'))" />
+    <AssemblyMetadata Include="Tedd.DotNetLab.Sdk" Value="$(NETCoreSdkVersion)" />
+    <AssemblyMetadata Include="Tedd.DotNetLab.NuGet.%(PackageVersion.Identity)" Value="%(PackageVersion.Version)" />
+  </ItemGroup>
+</Target>
+</Project>

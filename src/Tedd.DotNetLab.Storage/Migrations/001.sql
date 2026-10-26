@@ -1,0 +1,21 @@
+CREATE TABLE SchemaMigration(Version INTEGER PRIMARY KEY, AppliedAt TEXT NOT NULL);
+CREATE TABLE Record(
+    Id TEXT NOT NULL, Kind TEXT NOT NULL, Revision INTEGER NOT NULL CHECK(Revision>0),
+    Hash TEXT NOT NULL, Json TEXT NOT NULL, CreatedAt TEXT NOT NULL, PRIMARY KEY(Id,Revision));
+CREATE INDEX IX_Record_Kind ON Record(Kind,Id,Revision);
+CREATE TABLE Operation(
+    Id TEXT PRIMARY KEY, Kind TEXT NOT NULL, State TEXT NOT NULL, Revision INTEGER NOT NULL,
+    TargetId TEXT, ResultId TEXT, ErrorCode TEXT, CreatedAt TEXT NOT NULL);
+CREATE TABLE OperationEvent(
+    OperationId TEXT NOT NULL REFERENCES Operation(Id), Revision INTEGER NOT NULL,
+    State TEXT NOT NULL, CreatedAt TEXT NOT NULL, PRIMARY KEY(OperationId,Revision));
+CREATE TABLE IdempotencyRecord(
+    Caller TEXT NOT NULL, Key TEXT NOT NULL, Hash TEXT NOT NULL,
+    OperationId TEXT NOT NULL REFERENCES Operation(Id), PRIMARY KEY(Caller,Key));
+CREATE TABLE TargetLease(TargetId TEXT PRIMARY KEY, OperationId TEXT NOT NULL REFERENCES Operation(Id));
+CREATE TABLE TaintedTarget(TargetId TEXT PRIMARY KEY, Reason TEXT NOT NULL);
+CREATE TABLE GrantUse(GrantId TEXT PRIMARY KEY, Count INTEGER NOT NULL);
+CREATE TABLE ArtifactPin(ArtifactId TEXT PRIMARY KEY, Reason TEXT NOT NULL);
+CREATE TABLE AuditEvent(
+    Sequence INTEGER PRIMARY KEY AUTOINCREMENT, Action TEXT NOT NULL, EntityId TEXT NOT NULL,
+    Detail TEXT NOT NULL, CreatedAt TEXT NOT NULL);

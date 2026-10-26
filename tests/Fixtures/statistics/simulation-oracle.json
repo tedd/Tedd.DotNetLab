@@ -1,0 +1,385 @@
+{
+  "plan_hash": "f33ee06b3765ca0cc08fd25cd29a3ec88ad81e6be62bf5f942a85604c3e3d4d9",
+  "generator": "Python 3.14.7; NumPy 2.5.2; SciPy 1.18.0",
+  "generator_hash": "3980339d295712212192f79ad246545449ab5269d352343e2612a26f73b99dba",
+  "designs": [
+    {
+      "id": "normal_null",
+      "counters": {
+        "coverage": 9517,
+        "difference_rejected": 483,
+        "equivalent": 7437,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.0056851578996078,
+        "lower": 0.9975968882683143,
+        "upper": 1.0138390052270607,
+        "difference_p": 0.16219846385453765,
+        "tost_p": 0.14394797658414618
+      }
+    },
+    {
+      "id": "normal_useful",
+      "counters": {
+        "coverage": 9530,
+        "difference_rejected": 10000,
+        "equivalent": 0,
+        "improved": 10000,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9573814822723135,
+        "lower": 0.9507799738519804,
+        "upper": 0.9640288266532495,
+        "difference_p": 6.032498439526719e-14,
+        "tost_p": 0.9999999999783955
+      }
+    },
+    {
+      "id": "equivalence_lower_boundary",
+      "counters": {
+        "coverage": 9515,
+        "difference_rejected": 10000,
+        "equivalent": 497,
+        "improved": 246,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9914793993337414,
+        "lower": 0.987782196665771,
+        "upper": 0.9951904403839119,
+        "difference_p": 5.4955873974167456e-05,
+        "tost_p": 0.21059500312580606
+      }
+    },
+    {
+      "id": "equivalence_upper_boundary",
+      "counters": {
+        "coverage": 9503,
+        "difference_rejected": 9999,
+        "equivalent": 518,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.0074415634092093,
+        "lower": 1.0028447225885273,
+        "upper": 1.01205947523426,
+        "difference_p": 0.0023966801764930008,
+        "tost_p": 0.13334544921204577
+      }
+    },
+    {
+      "id": "equivalence_inside",
+      "counters": {
+        "coverage": 9550,
+        "difference_rejected": 450,
+        "equivalent": 9999,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.0018901020615767,
+        "lower": 0.9982319870263865,
+        "upper": 1.0055616226034874,
+        "difference_p": 0.3005432661557645,
+        "tost_p": 4.53884485065452e-05
+      }
+    },
+    {
+      "id": "equivalence_outside_lower",
+      "counters": {
+        "coverage": 9530,
+        "difference_rejected": 10000,
+        "equivalent": 0,
+        "improved": 7922,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9841516724469441,
+        "lower": 0.9807480807534156,
+        "upper": 0.98756707597742,
+        "difference_p": 1.3591462364412113e-10,
+        "tost_p": 0.9992601511125189
+      }
+    },
+    {
+      "id": "equivalence_outside_upper",
+      "counters": {
+        "coverage": 9488,
+        "difference_rejected": 10000,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.01846777384109,
+        "lower": 1.0140617728219998,
+        "upper": 1.0228929185114848,
+        "difference_p": 1.0098446242588027e-09,
+        "tost_p": 0.999776691582884
+      }
+    },
+    {
+      "id": "unequal_variance_welch",
+      "counters": {
+        "coverage": 9515,
+        "difference_rejected": 485,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.0024651613802913,
+        "lower": 0.9803097055534948,
+        "upper": 1.0251213408254631
+      }
+    },
+    {
+      "id": "normal_additive",
+      "counters": {
+        "coverage": 9513,
+        "difference_rejected": 487,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": -0.5557088743030625,
+        "lower": -1.1665331892581041,
+        "upper": 0.05511544065197915
+      }
+    },
+    {
+      "id": "student3_heavy_tail",
+      "counters": {
+        "coverage": 0,
+        "difference_rejected": 0,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 0,
+        "blocked": 10000,
+        "descriptive": 0,
+        "naive_coverage": 9571,
+        "naive_difference_rejected": 429,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9988698526805837,
+        "lower": 0.9896459753264956,
+        "upper": 1.0081797000841284,
+        "difference_p": 0.8053148786290548,
+        "tost_p": 0.029465077036270347
+      }
+    },
+    {
+      "id": "symmetric_outliers",
+      "counters": {
+        "coverage": 0,
+        "difference_rejected": 0,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 0,
+        "blocked": 10000,
+        "descriptive": 0,
+        "naive_coverage": 9650,
+        "naive_difference_rejected": 350,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9995332218384655,
+        "lower": 0.9913905823926046,
+        "upper": 1.0077427396452094,
+        "difference_p": 0.9080773940422292,
+        "tost_p": 0.01156978694765222
+      }
+    },
+    {
+      "id": "ar1_unresolved_dependence",
+      "counters": {
+        "coverage": 0,
+        "difference_rejected": 0,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 0,
+        "blocked": 0,
+        "descriptive": 10000,
+        "naive_coverage": 4675,
+        "naive_difference_rejected": 5325,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 1.0036546812323852,
+        "lower": 0.9951627763242696,
+        "upper": 1.0122190491090561,
+        "difference_p": 0.38796737027771383,
+        "tost_p": 0.07023843864670916
+      }
+    },
+    {
+      "id": "session_cluster_means",
+      "counters": {
+        "coverage": 9524,
+        "difference_rejected": 476,
+        "equivalent": 6652,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9964288702144158,
+        "lower": 0.9884317327870139,
+        "upper": 1.004490710347034,
+        "difference_p": 0.3722027873977537,
+        "tost_p": 0.055739689903826606
+      }
+    },
+    {
+      "id": "fixed_family_five",
+      "counters": {
+        "coverage": 9499,
+        "difference_rejected": 501,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9954291925548027,
+        "lower": 0.9853510208021293,
+        "upper": 1.0056104438636262,
+        "difference_p": 0.22597173059568504,
+        "tost_p": 0.0751798317686825
+      }
+    },
+    {
+      "id": "adaptive_winner_fresh_confirmation",
+      "counters": {
+        "coverage": 9497,
+        "difference_rejected": 503,
+        "equivalent": 95,
+        "improved": 4,
+        "promotion": 4,
+        "usable": 10000,
+        "blocked": 10000,
+        "descriptive": 0,
+        "naive_coverage": 8863,
+        "naive_difference_rejected": 1137,
+        "naive_promotion": 17,
+        "naive_quantile_coverage": 0
+      },
+      "first": {
+        "estimate": 0.9884087654595406,
+        "lower": 0.9690876958184855,
+        "upper": 1.00811504660796,
+        "difference_p": 0.23750755241763702,
+        "tost_p": 0.5654560405563975
+      }
+    },
+    {
+      "id": "paired_cluster_median",
+      "counters": {
+        "coverage": 9424,
+        "difference_rejected": 0,
+        "equivalent": 0,
+        "improved": 0,
+        "promotion": 0,
+        "usable": 10000,
+        "blocked": 0,
+        "descriptive": 0,
+        "naive_coverage": 0,
+        "naive_difference_rejected": 0,
+        "naive_promotion": 0,
+        "naive_quantile_coverage": 8278
+      },
+      "first": {
+        "estimate": -0.4195762014102513,
+        "lower": -1.3696728904580624,
+        "upper": 1.0472915431033982
+      }
+    }
+  ]
+}
