@@ -24,6 +24,7 @@ When you ask an AI agent to optimize or debug a .NET application on its own, it 
 | **Cut p99 / Tail-Latency Spikes** | Captures per-operation latency vectors and runs cluster-bootstrapped quantile comparisons (p50, p95, p99, p99.9) across independent blocks. |
 | **Test Whether Two Optimizations Stack ($2 \times 2$ Factorial)** | Evaluates Factor $A$ (e.g., `Span<T>` parsing) $\times$ Factor $B$ (e.g., `ArrayPool<T>` reuse) to measure main effects *and* interaction ($AB$)—revealing whether two ideas compound or cancel each other out. |
 | **Inspect JIT x64 Assembly & Prototype via Live ReJIT** | Disassembles actual tiered JIT x64 machine code (`Iced`), computes instruction diffs, and tests bounded CIL replacements in-memory with automatic rollback on failure. |
+| **Test C# Changes Without Recreating a Running Session** | Imports a selected compiled method body with instance fields, arrays, spans, refs, structs, or existing SIMD calls. Cooperative application-thread boundaries pause frames for installation and validation while retaining the process and application objects. Method signatures, type layouts, and referenced metadata must already match the loaded module. |
 | **Localize Regressions & Confirm in Clean Processes** | Preserves immutable hypotheses, baselines, and artifacts in a local SQLite catalog across restarts, and validates final source candidates across 20+ fresh, profiler-free OS processes (`start_confirmation`). |
 
 ---

@@ -1,5 +1,6 @@
 #pragma once
 #include "RuntimePolicy.h"
+#include "ManagedCil.h"
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -175,6 +176,45 @@ class Inspector {
         throw Failure("resource_limit","Module enumeration cap reached.");
     }
 public:
+    CilBody ValidateManagedBody(ModuleID module,mdMethodDef method,const std::vector<unsigned char>& body) {
+        Com<IMetaDataImport2> metadata;
+        Check(info->GetModuleMetaData(module,ofRead,IID_IMetaDataImport2,reinterpret_cast<IUnknown**>(&metadata.value)),"ManagedBodyMetadata");
+        auto methodShape=[&](unsigned token) {
+            PCCOR_SIGNATURE signature=nullptr; ULONG length=0;
+            if((token>>24)==0x2b) {
+                mdToken parent=0; Check(metadata->GetMethodSpecProps(token,&parent,&signature,&length),"ManagedMethodSpec"); token=parent;
+            }
+            if((token>>24)==0x06)
+                Check(metadata->GetMethodProps(token,nullptr,nullptr,0,nullptr,nullptr,&signature,&length,nullptr,nullptr),"ManagedMethodSignature");
+            else if((token>>24)==0x0a)
+                Check(metadata->GetMemberRefProps(token,nullptr,nullptr,0,nullptr,&signature,&length),"ManagedMemberSignature");
+            else throw Failure("invalid_cil","Expected a managed method reference.");
+            return ManagedSignature(signature,length);
+        };
+        auto shape=methodShape(method); unsigned locals=0;
+        if(body.size()>=12&&(body[0]&3)==3) {
+            unsigned token=Read32(body.data()+8);
+            if(token!=0) {
+                if((token>>24)!=0x11||!metadata->IsValidToken(token)) throw Failure("invalid_cil","Local signature is absent.");
+                PCCOR_SIGNATURE signature=nullptr; ULONG length=0;
+                Check(metadata->GetSigFromToken(token,&signature,&length),"ManagedLocalSignature"); locals=ManagedLocals(signature,length);
+            }
+        }
+        auto tokenCheck=[&](unsigned token,int kind) {
+            if(!metadata->IsValidToken(token)) throw Failure("invalid_cil","Managed operand token is absent from the loaded module.");
+            unsigned table=token>>24; bool type=table==1||table==2||table==0x1b;
+            bool methodToken=table==6||table==0x2b,field=table==4;
+            if(table==0x0a) {
+                PCCOR_SIGNATURE signature=nullptr; ULONG length=0;
+                Check(metadata->GetMemberRefProps(token,nullptr,nullptr,0,nullptr,&signature,&length),"ManagedOperandSignature");
+                if(length==0) throw Failure("invalid_cil","Empty member signature.");
+                field=signature[0]==6; methodToken=!field;
+            }
+            if(!(kind==1?table==0x70:kind==2?field:kind==3?type:kind==4?methodToken:type||methodToken||field))
+                throw Failure("invalid_cil","Managed operand token has the wrong kind.");
+        };
+        return ValidateManagedCil(body,shape.arguments+(shape.instance?1:0),locals,shape.returns,tokenCheck,methodShape);
+    }
     unsigned LocalCount(ModuleID module,unsigned token) {
         if(token==0) return 0;
         if((token>>24)!=0x11) throw Failure("invalid_cil","Expected an existing local signature token.");

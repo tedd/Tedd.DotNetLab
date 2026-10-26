@@ -130,6 +130,21 @@ await listener;
 
 See [`samples/LabWorkload/Program.cs`](../samples/LabWorkload/Program.cs) (`--application-thread-harness`) for a complete working example.
 
+For a running game, construct the dispatcher on the game thread and call `PumpPending` between frames, after joining workers that use the affected state:
+
+```csharp
+while (!cts.IsCancellationRequested)
+{
+    dispatcher.PumpPending(maximumCallbacks: 1, cancellation: cts.Token);
+    UpdatePhysics();
+    RenderFrame();
+}
+```
+
+With `ThreadAffinity.ApplicationThread`, `lab.patch apply` and `restore_original` acquire a bounded mutation hold through the harness. The frame pump services correctness callbacks on its owning thread while ordinary frames remain paused. The controller releases the hold after compilation and correctness verification; the hold also expires on its deadline or controller disconnect. Other transaction IDs cannot execute scenarios inside the hold. Custom dispatchers must implement `IApplicationMutationBoundary` to provide this coordination.
+
+ReJIT affects future invocations. An already-running invocation continues its old body, so select per-frame methods rather than a nonreturning outer loop. Restoring code does not undo state changes made by a candidate; the scenario owns any snapshot, replay, or state reset required for repeatable comparisons. `Prepare`, `Reset`, `ExecuteBatch`, `Validate`, and `Cleanup` must preserve the session state you intend to keep.
+
 ---
 
 ## Fresh-Process Normal-Build Confirmation (`RunOwnedAsync`)

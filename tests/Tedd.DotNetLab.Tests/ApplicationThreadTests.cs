@@ -10,6 +10,34 @@ namespace Tedd.DotNetLab.Tests;
 
 public sealed class ApplicationThreadTests
 {
+    [Fact,Case("UT-HAR-FRAME-BOUNDARY","FR-037,FR-052,FR-053","M6","Unit")]
+    public async Task FramePumpPausesFramesWhileServicingMutationValidationAndResumesOnRelease()
+    {
+        var ready=new TaskCompletionSource<ApplicationThreadDispatcher>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var stop=new CancellationTokenSource(); int frames=0;
+        var thread=new Thread(()=>
+        {
+            using var dispatcher=new ApplicationThreadDispatcher(); ready.SetResult(dispatcher);
+            while(!stop.IsCancellationRequested) { dispatcher.PumpPending(); Interlocked.Increment(ref frames); Thread.Sleep(1); }
+        }) { IsBackground=true };
+        thread.Start(); ApplicationThreadDispatcher? owner=null; IDisposable? held=null;
+        try
+        {
+            owner=await ready.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            held=await owner.HoldAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+            int before=Volatile.Read(ref frames);
+            Assert.Equal(owner.OwningThreadId,await owner.DispatchAsync(()=>Environment.CurrentManagedThreadId,CancellationToken.None));
+            Assert.Equal(before,Volatile.Read(ref frames));
+            held.Dispose(); held=null;
+            await owner.DispatchAsync(()=>0,CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(Volatile.Read(ref frames)>before);
+            using var cancel=new CancellationTokenSource(); held=await owner.HoldAsync(cancel.Token);
+            before=Volatile.Read(ref frames); cancel.Cancel(); held.Dispose(); held=null;
+            await owner.DispatchAsync(()=>0,CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(Volatile.Read(ref frames)>before);
+        }
+        finally { held?.Dispose(); stop.Cancel(); owner?.Dispose(); Assert.True(thread.Join(TimeSpan.FromSeconds(5))); }
+    }
     [Fact,Case("IT-HAR-002","FR-004,FR-024,FR-031,FR-037,FR-062","M2","Integration")]
     public async Task PublicExecutionRunsLifecycleOnTheRealApplicationOwningThread()
     {

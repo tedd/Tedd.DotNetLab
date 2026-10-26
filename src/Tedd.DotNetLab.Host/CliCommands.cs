@@ -14,6 +14,9 @@ internal static class CliCommands
 {
     public static async Task<(int ExitCode, string Output)> ExecuteAsync(LabService service, string[] args, string? stdIn)
     {
+        if(args.Length<2||!Path.TrimEndingDirectorySeparator(Path.GetFullPath(args[1])).Equals(
+            Path.TrimEndingDirectorySeparator(service.Catalog.Root),OperatingSystem.IsWindows()?StringComparison.OrdinalIgnoreCase:StringComparison.Ordinal))
+            throw new LabException("invalid_workspace","CLI workspace differs from the connected controller.");
         string command = args[0];
         var stdout = new StringBuilder();
         int exitCode = 0;

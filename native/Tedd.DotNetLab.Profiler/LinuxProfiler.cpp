@@ -95,12 +95,12 @@ class LinuxProfiler final : public CallbackBase {
             return mutation->Status();
         }
         if(action=="preflight"||action=="apply"||action=="verify_mutation"||action=="restore"||action=="reconcile_mutation") {
-            static const std::set<std::string> fields={"schema_version","action","target_id","process_id","start_time_utc_ticks","expected_target_epoch","grant","selector","transaction_id","body","base_il_hash","inliners","probe","probe_id","helper_hash","enter_token","exit_token","exceptional_exit_token","probe_local_signature","probe_local_count","return_local"};
+            static const std::set<std::string> fields={"schema_version","action","target_id","process_id","start_time_utc_ticks","expected_target_epoch","grant","selector","transaction_id","body","base_il_hash","inliners","probe","probe_id","helper_hash","enter_token","exit_token","exceptional_exit_token","probe_local_signature","probe_local_count","return_local","body_policy"};
             for(auto field=request.begin();field!=request.end();++field) if(!fields.contains(field.key())) throw Failure("invalid_request","Unknown Linux mutation field.");
             if(linux_platform::Environment("DOTNETLAB_DISPOSABLE")!="1") throw Failure("capability_unsupported","Linux mutation requires an explicitly disposable startup target.");
             InspectionLease lease; auto body=DecodeBase64(request.value("body","")); const auto& selector=request.at("selector");
             if(selector.value("module_hash","").size()!=64) throw Failure("invalid_request","Mutation requires an explicit module hash.");
-            CilArguments(selector.value("signature",""));
+            if(!Mutation::ManagedPolicy(request)) CilArguments(selector.value("signature",""));
             auto scope=selector.value("module_mvid","")+"/"+selector.value("method_token","")+"/"+selector.value("module_hash","");
             authorization.CheckGrant(request,request.value("probe",false)?"install_probes":"replace_il",target,start,workspace,executionEpoch.load(),MutationGrantHash(request,body),scope);
             Check(info->InitializeCurrentThread(),"InitializeCurrentThread");

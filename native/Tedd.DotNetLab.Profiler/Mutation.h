@@ -116,8 +116,9 @@ public:
     }
     json Status() { std::lock_guard lock(gate); if(mutations>0) budget.ObserveMemory(MutationPrivateCommit(),false); return StatusLocked(); }
     json Reconcile(const json& request,const Inspector::Method& method) {
-        ValidateBody(method,method.original);
-        if(!(method.attributes&mdStatic)||!method.function)
+        bool managed=ManagedPolicy(request);
+        ValidateReplacement(method,method.original,managed);
+        if((!managed&&!(method.attributes&mdStatic))||!method.function)
             throw Failure("capability_unsupported","Recovery requires the qualified compiled method subset.");
         auto prepared=PrepareCallers(request,method);
         std::lock_guard lock(gate);
@@ -137,6 +138,16 @@ public:
         unsigned locals=body.size()>=12&&(body[0]&3)==3?Read32(body.data()+8):0;
         return ValidateCil(body,CilArguments(method.signature),method.token,
             Inspector(info,observedCodeEpoch).LocalCount(method.module,locals),locals,enter,exit);
+    }
+    static bool ManagedPolicy(const json& request) {
+        auto policy=request.value("body_policy","restricted-int32-cil/1");
+        if(policy!="restricted-int32-cil/1"&&policy!="managed-body-cil/1") throw Failure("capability_unsupported","Unknown replacement body policy.");
+        if(policy=="managed-body-cil/1"&&request.value("probe",false)) throw Failure("capability_unsupported","Managed body probes require separate qualification.");
+        return policy=="managed-body-cil/1";
+    }
+    void ValidateReplacement(const Inspector::Method& method,const std::vector<unsigned char>& body,bool managed) {
+        if(managed) Inspector(info,observedCodeEpoch).ValidateManagedBody(method.module,method.token,body);
+        else ValidateBody(method,body);
     }
     void VerifyProbeBody(const json& request,const Inspector::Method& method,const std::vector<unsigned char>& body) {
         std::vector<unsigned char> original=method.original;
@@ -184,11 +195,12 @@ public:
         ValidateBody(method,body,enter,exit);
     }
     json Preflight(const json& request,const Inspector::Method& method,const std::vector<unsigned char>& body) {
+        bool managed=ManagedPolicy(request);
         bool probe=request.value("probe",false);
-        if(probe) VerifyProbeBody(request,method,body); else ValidateBody(method,body);
-        if(!(method.attributes&mdStatic)||!method.function||method.name==".cctor")
-            throw Failure("capability_unsupported","Live mutation requires a compiled nongeneric static Int32 method.");
-        ValidateBody(method,method.original);
+        if(probe) VerifyProbeBody(request,method,body); else ValidateReplacement(method,body,managed);
+        if((!managed&&!(method.attributes&mdStatic))||!method.function||method.name==".cctor"||method.name==".ctor")
+            throw Failure("capability_unsupported","Live mutation requires a compiled nongeneric nonconstructor method within the selected body policy.");
+        ValidateReplacement(method,method.original,managed);
         auto prepared=PrepareCallers(request,method);
         std::lock_guard lock(gate);
         if(mutationTainted.load()||mutationPending.load()) throw Failure("target_tainted","Previous mutation is unresolved.");

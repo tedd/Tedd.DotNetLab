@@ -15,6 +15,13 @@ if (args.Length == 2 && args[0] is "--harness" or "--application-thread-harness"
     GC.KeepAlive(NativeFixture.Divide(2));
     GC.KeepAlive(NativeFixture.InlineLeaf(1));
     GC.KeepAlive(NativeFixture.InlineCaller(1));
+    GC.KeepAlive(ManagedBodyFixture.Shared.Sum([1,2,3]));
+    GC.KeepAlive(ManagedBodyFixture.Add(System.Runtime.Intrinsics.Vector256.Create(2f)));
+    int managedValue=2; ManagedBodyFixture.Increment(ref managedValue);
+    GC.KeepAlive(ManagedBodyFixture.Transform(new System.Numerics.Vector2(2,3)));
+    GC.KeepAlive(ManagedBodyFixture.Incorrect());
+    GC.KeepAlive(ManagedBodyFixture.IntegerCall(-3));
+    GC.KeepAlive(ManagedBodyFixture.SpanSum([1,2,3]));
     var registry = new Tedd.DotNetLab.Harness.ScenarioRegistry();
     registry.Register(new CpuScenario());
     registry.Register(new FactorialScenario());
@@ -33,6 +40,8 @@ if (args.Length == 2 && args[0] is "--harness" or "--application-thread-harness"
     }
     using var dispatcher=args[0]=="--application-thread-harness"?new Tedd.DotNetLab.Harness.ApplicationThreadDispatcher():null;
     if(dispatcher is not null) registry.Register(new ApplicationThreadScenario(dispatcher.OwningThreadId));
+    foreach(string method in new[]{nameof(ManagedBodyFixture.Sum),nameof(ManagedBodyFixture.Add),nameof(ManagedBodyFixture.Increment),nameof(ManagedBodyFixture.Transform),nameof(ManagedBodyFixture.Incorrect),nameof(ManagedBodyFixture.IntegerCall),nameof(ManagedBodyFixture.SpanSum)})
+        registry.Register(new ManagedReplacementScenario(method,dispatcher?.OwningThreadId));
     using var cancellation = new CancellationTokenSource();
     Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
     var host = new Tedd.DotNetLab.Harness.HarnessHost(registry,args[1],dispatcher,probes:new Tedd.DotNetLab.Probes.HarnessProbeSupport(args[1]));

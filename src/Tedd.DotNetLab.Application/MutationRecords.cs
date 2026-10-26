@@ -11,11 +11,16 @@ public record ProbeConfiguration(string Version,string HelperHash,string HelperM
 public record CilCandidateRecord(string Id,string SchemaVersion,TargetIdentity SourceTarget,StoredMethod Method,
     string ModuleLoadIdentity,string SourceInspectionId,string SourceManifestArtifactId,string BodyArtifactId,
     string BodyHash,string BaseIlHash,string OriginalIlHash,string Transformation,IReadOnlyList<string> Components,ProbeConfiguration? Probe=null,CilPolicy? Policy=null,
-    IReadOnlyList<NativeInlinerBinding>? Inliners=null)
+    IReadOnlyList<NativeInlinerBinding>? Inliners=null,
+    [property:System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? BodyPolicy=null,
+    [property:System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? CompiledArtifactId=null,
+    [property:System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? CompiledMethodToken=null)
 {
     public string Scope=>Method.ModuleMvid+"/"+Method.Token+"/"+Method.ModuleHash;
-    public string ContentHash=>Wire.Hash(new { SchemaVersion,SourceTarget,Method,ModuleLoadIdentity,SourceInspectionId,
-        SourceManifestArtifactId,BodyArtifactId,BodyHash,BaseIlHash,OriginalIlHash,Transformation,Components,Probe,Policy,Inliners });
+    public string ContentHash=>BodyPolicy is null?Wire.Hash(new { SchemaVersion,SourceTarget,Method,ModuleLoadIdentity,SourceInspectionId,
+        SourceManifestArtifactId,BodyArtifactId,BodyHash,BaseIlHash,OriginalIlHash,Transformation,Components,Probe,Policy,Inliners }):
+        Wire.Hash(new { SchemaVersion,SourceTarget,Method,ModuleLoadIdentity,SourceInspectionId,SourceManifestArtifactId,BodyArtifactId,
+            BodyHash,BaseIlHash,OriginalIlHash,Transformation,Components,Probe,Policy,Inliners,BodyPolicy,CompiledArtifactId,CompiledMethodToken });
 }
 public record MutationRoot(string Id,string OperationId,string CandidateId,string CandidateHash,TargetIdentity Target,
     string ScenarioId,string GrantId,string ExecutionGrantId,string NativeTransactionId,int SetupOperations,

@@ -126,7 +126,7 @@ class Profiler final : public CallbackBase {
     std::unique_ptr<Mutation> mutation;
     Inlining inlining;
     json Execute(const json& request) {
-        static const std::set<std::string> fields={"schema_version","action","target_id","process_id","start_time_utc_ticks","expected_target_epoch","grant","selector","transaction_id","body","base_il_hash","probe","probe_id","helper_hash","enter_token","exit_token","exceptional_exit_token","probe_local_signature","probe_local_count","return_local","inliners"};
+        static const std::set<std::string> fields={"schema_version","action","target_id","process_id","start_time_utc_ticks","expected_target_epoch","grant","selector","transaction_id","body","base_il_hash","probe","probe_id","helper_hash","enter_token","exit_token","exceptional_exit_token","probe_local_signature","probe_local_count","return_local","inliners","body_policy"};
         if(!request.is_object()) throw Failure("invalid_request","Native request must be an object.");
         for(auto entry=request.begin();entry!=request.end();++entry) if(!fields.contains(entry.key()))
             throw Failure("invalid_request","Unknown native request field.");
@@ -160,7 +160,7 @@ class Profiler final : public CallbackBase {
             if(attached&&probe) throw Failure("capability_unsupported","Attach-mode selected probes require separate qualification.");
             const auto& selector=request.at("selector");
             if(selector.value("module_hash","").size()!=64) throw Failure("invalid_request","Mutation requires an explicit module hash.");
-            CilArguments(selector.value("signature",""));
+            if(!Mutation::ManagedPolicy(request)) CilArguments(selector.value("signature",""));
             auto scope=selector.value("module_mvid","")+"/"+selector.value("method_token","")+"/"+selector.value("module_hash","");
             authorization.CheckGrant(request,probe?"install_probes":"replace_il",targetId,startTicks,workspace,executionEpoch.load(),MutationGrantHash(request,body),scope);
             Check(info->InitializeCurrentThread(),"InitializeCurrentThread");

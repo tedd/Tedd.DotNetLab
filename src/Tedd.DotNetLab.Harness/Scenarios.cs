@@ -26,6 +26,10 @@ public interface IScenarioDispatcher
 {
     Task<T> DispatchAsync<T>(Func<T> action, CancellationToken cancellation);
 }
+public interface IApplicationMutationBoundary : IScenarioDispatcher
+{
+    Task<IDisposable> HoldAsync(CancellationToken cancellation);
+}
 public sealed class InlineDispatcher : IScenarioDispatcher
 {
     public Task<T> DispatchAsync<T>(Func<T> action, CancellationToken cancellation)

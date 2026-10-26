@@ -29,15 +29,16 @@ public sealed class ProfilerTests
         }
         finally { if(!process.HasExited) { process.Kill(true); await process.WaitForExitAsync(); } }
     }
-    public static async Task<Process> StartNativeTarget(string workspace,bool inspectionStress=false,bool disposable=true,bool budgetGrowthStimulus=false,bool activeFrameStimulus=false,string? runtimeVersion=null)
+    public static async Task<Process> StartNativeTarget(string workspace,bool inspectionStress=false,bool disposable=true,bool budgetGrowthStimulus=false,bool activeFrameStimulus=false,string? runtimeVersion=null,bool applicationThread=false,bool startupProfiler=true)
     {
         string dll=TestWorkspace.Workload(runtimeVersion);
         var start=new ProcessStartInfo("dotnet")
         { RedirectStandardOutput=true,RedirectStandardError=true,RedirectStandardInput=true,UseShellExecute=false };
         if(runtimeVersion is not null) { start.FileName=RuntimeSupport.StartInfo(runtimeVersion).FileName; RuntimeSupport.AddRuntimeArguments(start,runtimeVersion); }
         start.ArgumentList.Add(dll);
-        start.ArgumentList.Add("--harness"); start.ArgumentList.Add(workspace);
-        start.Environment["CORECLR_ENABLE_PROFILING"]="1";
+        start.ArgumentList.Add(applicationThread?"--application-thread-harness":"--harness"); start.ArgumentList.Add(workspace);
+        start.Environment["CORECLR_ENABLE_PROFILING"]=startupProfiler?"1":"0";
+        start.Environment["DOTNET_ENABLE_PROFILING"]=startupProfiler?"1":"0";
         start.Environment["CORECLR_PROFILER"]=ProfilerId;
         start.Environment["CORECLR_PROFILER_PATH_64"]=ProfilerPath;
         start.Environment["DOTNETLAB_WORKSPACE"]=workspace; start.Environment["DOTNETLAB_EXIT_ON_STDIN"]="1";

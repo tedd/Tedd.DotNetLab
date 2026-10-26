@@ -12,6 +12,37 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
     private volatile bool tainted;
     private bool ownedProcess;
     private int ownedExecutionCount;
+    private string? mutationBoundaryOwner;
+    public async Task<IDisposable> EnterMutationBoundaryAsync(RunRequest request,CancellationToken cancellation)
+    {
+        Authorize(request);
+        if(applicationDispatcher is not IApplicationMutationBoundary boundary)
+            throw new LabException("capability_unsupported","Application dispatcher must support mutation boundaries.");
+        var scenario=registry.Get(request.ScenarioId); var descriptor=ScenarioRegistry.Describe(scenario);
+        if(scenario is not ISynchronousScenario||descriptor.Affinity!=ThreadAffinity.ApplicationThread||
+            request.ExpectedMethodScope is null||!(descriptor.MutationScopes?.Contains(request.ExpectedMethodScope)??false)||
+            request.ExpectedCallerScopes?.Any(scope=>!(descriptor.MutationScopes?.Contains(scope)??false))==true)
+            throw new LabException("scenario_scope_mismatch","Application mutation boundary requires a synchronous oracle covering every affected scope.");
+        if(!await lease.WaitAsync(0,cancellation)) throw new LabException("lease_conflict","Target harness is executing.");
+        try
+        {
+            if(Interlocked.CompareExchange(ref mutationBoundaryOwner,request.ExecutionId,null) is not null)
+                throw new LabException("lease_conflict","Another application mutation boundary is held.");
+        }
+        finally { lease.Release(); }
+        try
+        {
+            grantUses.AddOrUpdate(request.Grant.Id,1,(_,old)=>old>=request.Grant.MaximumOperations?
+                throw new LabException("permission_denied","Target grant budget exhausted."):old+1);
+            var held=await boundary.HoldAsync(cancellation);
+            return new MutationBoundaryLease(this,held,request.ExecutionId);
+        }
+        catch { Interlocked.CompareExchange(ref mutationBoundaryOwner,null,request.ExecutionId); throw; }
+    }
+    private sealed class MutationBoundaryLease(ScenarioRunner runner,IDisposable held,string owner) : IDisposable
+    {
+        public void Dispose() { held.Dispose(); Interlocked.CompareExchange(ref runner.mutationBoundaryOwner,null,owner); }
+    }
     internal void EnableOwnedProcess()=>ownedProcess=true;
     public bool Tainted => tainted;
     public async Task<object> ControlAsync(Func<object> action,CancellationToken cancellation)
@@ -33,9 +64,12 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
             nativeLease=NativeCoordination.Acquire(true);
             Authorize(request);
             var scenario=registry.Get(request.ScenarioId);
-            if(scenario is not ISynchronousScenario sync||sync.Describe().Affinity!=ThreadAffinity.Any||request.WarmupBatches!=0||
+            if(scenario is not ISynchronousScenario sync||request.WarmupBatches!=0||
                 !sync.Describe().Variants.Contains(request.Variant))
-                throw new LabException("capability_unsupported","Mutation setup currently requires a synchronous Any-thread registered scenario.");
+                throw new LabException("capability_unsupported","Mutation setup requires a synchronous registered scenario.");
+            if(sync.Describe().Affinity==ThreadAffinity.ApplicationThread&&
+                (applicationDispatcher is null||Volatile.Read(ref mutationBoundaryOwner)!=request.ExecutionId))
+                throw new LabException("capability_unsupported","Application-thread mutation setup requires a held mutation boundary.");
             if(request.ExpectedMethodScope is not null&&!(sync.Describe().MutationScopes?.Contains(request.ExpectedMethodScope)??false)||
                 request.ExpectedMethodScope is null&&NativeCoordination.Present)
                 throw new LabException("scenario_scope_mismatch","Setup oracle does not declare coverage of the selected mutation method.");
@@ -43,7 +77,7 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
                 throw new LabException("scenario_scope_mismatch","Setup oracle does not declare every affected caller scope.");
             grantUses.AddOrUpdate(request.Grant.Id,1,(_,old)=>old>=request.Grant.MaximumOperations?
                 throw new LabException("permission_denied","Target grant budget exhausted."):old+1);
-            work=Task.Run(()=>
+            ValidationResult RunSetup()
             {
                 try
                 {
@@ -53,7 +87,10 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
                     return oracle with { Correct=oracle.Correct&&completed==request.OperationCount };
                 }
                 finally { sync.Cleanup(); }
-            },CancellationToken.None);
+            }
+            work=sync.Describe().Affinity==ThreadAffinity.ApplicationThread
+                ?applicationDispatcher!.DispatchAsync(RunSetup,deadline.Token)
+                :Task.Run(RunSetup,CancellationToken.None);
             try
             {
                 var result=await work.WaitAsync(deadline.Token);
@@ -150,6 +187,8 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
     private void Authorize(RunRequest request)
     {
         if (tainted) throw new LabException("target_tainted","Harness quiescence is unknown.");
+        if(Volatile.Read(ref mutationBoundaryOwner) is {} owner&&owner!=request.ExecutionId)
+            throw new LabException("lease_conflict","Another transaction owns the application mutation boundary.");
         if (request.Target.Id != target.Id || request.Target.ProcessId != target.ProcessId ||
             request.Target.StartTimeUtcTicks != target.StartTimeUtcTicks)
             throw new LabException("target_identity_changed","Harness target differs.");

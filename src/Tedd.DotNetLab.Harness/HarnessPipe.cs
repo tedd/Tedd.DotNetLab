@@ -81,6 +81,17 @@ public sealed class HarnessHost
                 if (command.SchemaVersion != Wire.Version) throw new LabException("schema_unsupported","Unsupported harness protocol.");
                 if (command.Target.Id != Target.Id || command.Target.StartTimeUtcTicks != Target.StartTimeUtcTicks)
                     throw new LabException("target_identity_changed","Handshake identity differs.");
+                if(command.Action=="mutation_boundary"&&command.Run is not null&&command.Probe is null)
+                {
+                    deadline.CancelAfter(command.Run.Deadline-DateTimeOffset.UtcNow);
+                    using(await runner.EnterMutationBoundaryAsync(command.Run,deadline.Token))
+                    {
+                        await Frames.WriteAsync(pipe,new HarnessReply(Wire.Version,"ok",JsonSerializer.SerializeToElement(new { held=true },Wire.Json),null,null),deadline.Token);
+                        byte[] end=new byte[1]; await pipe.ReadExactlyAsync(end,deadline.Token);
+                        if(end[0]!=1) throw new LabException("invalid_request","Invalid mutation boundary release.");
+                    }
+                    await pipe.WriteAsync(new byte[]{1},deadline.Token); return;
+                }
                 object response = command.Action switch
                 {
                     "handshake" when command.Run is null&&command.Probe is null => new HarnessHandshake(Target,registry.Describe(),runner.Tainted,probes?.Describe(),FootprintReader.Read() with { OwnedProcess=ownsProcess }),
@@ -103,6 +114,34 @@ public sealed class HarnessHost
 }
 public sealed class HarnessClient
 {
+    public async Task<IAsyncDisposable> HoldMutationBoundaryAsync(RunRequest run,CancellationToken cancellation)
+    {
+        var pipe=new NamedPipeClientStream(".",HarnessHost.PipeName(run.Target),PipeDirection.InOut,PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly);
+        try
+        {
+            using var connect=CancellationTokenSource.CreateLinkedTokenSource(cancellation); connect.CancelAfter(TimeSpan.FromSeconds(3));
+            await pipe.ConnectAsync(connect.Token); PeerIdentity.VerifyServer(pipe,run.Target);
+            await Frames.WriteAsync(pipe,new HarnessControl(Wire.Version,"mutation_boundary",run.Target,run),cancellation);
+            var response=await Frames.ReadAsync<HarnessReply>(pipe,cancellation);
+            if(response.SchemaVersion!=Wire.Version||response.Status!="ok")
+                throw new LabException(response.Code??"invalid_harness_response",response.Message??"Application mutation boundary was not acquired.");
+            return new BoundaryConnection(pipe);
+        }
+        catch { await pipe.DisposeAsync(); throw; }
+    }
+    private sealed class BoundaryConnection(NamedPipeClientStream pipe) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                using var deadline=new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                await pipe.WriteAsync(new byte[]{1},deadline.Token); byte[] receipt=new byte[1]; await pipe.ReadExactlyAsync(receipt,deadline.Token);
+                if(receipt[0]!=1) throw new LabException("target_tainted","Application mutation boundary release is unverified.");
+            }
+            finally { await pipe.DisposeAsync(); }
+        }
+    }
     public async Task<HarnessHandshake> HandshakeAsync(TargetIdentity target,CancellationToken cancellation) =>
         await SendAsync<HarnessHandshake>(target,new(Wire.Version,"handshake",target),cancellation);
     public async Task<Measurement> ExecuteAsync(RunRequest run,CancellationToken cancellation) =>

@@ -33,6 +33,11 @@ public sealed partial class LabService
             throw new LabException("invalid_plan","Original-normal control must be selected before any ReJIT body exists.");
         var artifact=await Artifacts.WriteJsonAsync(Wire.Id("original-control"),new CilInput(Wire.Version,snapshot.OriginalBody,"Byte-identical original IL for compilation-regime A/A control."),"original-body-control/v1");
         Upsert(artifact.Id,"artifact",artifact);
+        var method=Record<StoredMethod>(inspection.GetProperty("method_id").GetString()!,"method");
+        var image=await CodeArtifactAsync("art-"+method.ModuleHash,"application/vnd.microsoft.portable-executable");
+        try { NativeBodyPolicy.Verify(snapshot.OriginalBody,NativeBodyPolicy.Resolve(snapshot.OriginalBody,method,image.Path)); }
+        catch(LabException error) when(error.Code is "capability_unsupported" or "invalid_cil")
+        { return await RegisterCilCoreAsync(artifact.Id,inspectionId,snapshot.OriginalBodyHash,[],ManagedBodyPolicy.Qualification); }
         return await RegisterCilAsync(artifact.Id,inspectionId,snapshot.OriginalBodyHash,[]);
     }
     public async Task<CompilationControlPlan> CreateCompilationControlAsync(string candidateId,string scenarioId,string harnessVariant="baseline",int blocks=10,

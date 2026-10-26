@@ -12,6 +12,10 @@ public static class RecoveryHints
             "Use a schema/runtime combination explicitly supported by this controller; do not reinterpret the rejected document as the current schema.",
         "capability_unsupported" or "method_unsupported" =>
             "Read the target capability states and reasons. Use retained/offline evidence where available; live inspection or mutation requires an explicitly qualified target and method. Do not invoke a method to obtain code.",
+        "metadata_reference_missing" =>
+            "Use references and local signatures already present in the loaded target module. Adding metadata requires rebuilding the baseline and starting a new target session; retrying the same candidate cannot supply missing metadata.",
+        "type_layout_changed" =>
+            "Keep existing type layouts and field contracts unchanged for in-process replacement. A layout change requires a normal rebuild and a new target session.",
         "permission_denied" =>
             "Have the human operator verify target access and issue a valid grant for the exact action, target, content, and budget. Discovery does not grant permission; do not elevate automatically.",
         "record_not_found" =>

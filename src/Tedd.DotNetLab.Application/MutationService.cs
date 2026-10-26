@@ -10,7 +10,23 @@ namespace Tedd.DotNetLab.Application;
 public sealed partial class LabService
 {
     public async Task<CilCandidateRecord> RegisterCilAsync(string bodyArtifactId,string inspectionId,string baseIlHash,
-        IReadOnlyList<string> components)
+        IReadOnlyList<string> components)=>await RegisterCilCoreAsync(bodyArtifactId,inspectionId,baseIlHash,components);
+    public async Task<CilCandidateRecord> RegisterCompiledCilAsync(string compiledArtifactId,string methodToken,string inspectionId,
+        string baseIlHash,IReadOnlyList<string> components)
+    {
+        var inspection=Record<JsonElement>(inspectionId,"inspection");
+        var method=Record<StoredMethod>(inspection.GetProperty("method_id").GetString()!,"method");
+        var image=await CodeArtifactAsync("art-"+method.ModuleHash,"application/vnd.microsoft.portable-executable");
+        var compiled=await CodeArtifactAsync(compiledArtifactId,"application/vnd.microsoft.portable-executable");
+        byte[] body=CompiledBodyImporter.Import(compiled.Path,methodToken,image.Path,method);
+        var artifact=await Artifacts.WriteJsonAsync(Wire.Id("compiled-body"),new CilInput(Wire.Version,body,
+            "Compiled method body remapped to existing target-module metadata."),ManagedBodyPolicy.Qualification);
+        Upsert(artifact.Id,"artifact",artifact);
+        var candidate=await RegisterCilCoreAsync(artifact.Id,inspectionId,baseIlHash,components,ManagedBodyPolicy.Qualification,compiledArtifactId,methodToken);
+        Catalog.Pin(compiledArtifactId,"candidate_compiled_source"); return candidate;
+    }
+    private async Task<CilCandidateRecord> RegisterCilCoreAsync(string bodyArtifactId,string inspectionId,string baseIlHash,
+        IReadOnlyList<string> components,string? bodyPolicy=null,string? compiledArtifactId=null,string? compiledMethodToken=null)
     {
         if(Catalog.Get(inspectionId).Kind!="inspection") throw new LabException("invalid_request","Candidate requires a live acquisition record.");
         var inspection=Catalog.Get<JsonElement>(inspectionId);
@@ -32,10 +48,17 @@ public sealed partial class LabService
         foreach(string component in components) if(Catalog.Get(component).Kind is not ("candidate" or "cil_candidate"))
             throw new LabException("invalid_request","Candidate component is not registered.");
         var image=await CodeArtifactAsync("art-"+method.ModuleHash,"application/vnd.microsoft.portable-executable");
-        var policy=NativeBodyPolicy.Resolve(input.Body,method,image.Path);
-        var verification=NativeBodyPolicy.Verify(input.Body,policy);
+        CilPolicy? policy=null;
+        VerifiedCil verification;
+        if(bodyPolicy==ManagedBodyPolicy.Qualification)
+        {
+            ManagedBodyPolicy.Verify(source.OriginalBody,method,image.Path);
+            verification=ManagedBodyPolicy.Verify(input.Body,method,image.Path);
+        }
+        else { policy=NativeBodyPolicy.Resolve(input.Body,method,image.Path); verification=NativeBodyPolicy.Verify(input.Body,policy); }
         var candidate=new CilCandidateRecord(Wire.Id("cil"),Wire.Version,target,method,identities[0],inspectionId,
-            manifestId,artifact.Id,verification.Hash,baseIlHash,source.OriginalBodyHash,input.Transformation,components,Policy:policy,Inliners:source.Inliners??[]);
+            manifestId,artifact.Id,verification.Hash,baseIlHash,source.OriginalBodyHash,input.Transformation,components,Policy:policy,Inliners:source.Inliners??[],
+            BodyPolicy:bodyPolicy,CompiledArtifactId:compiledArtifactId,CompiledMethodToken:compiledMethodToken);
         Catalog.Put(candidate.Id,"cil_candidate",candidate);
         Catalog.Pin(artifact.Id,"candidate_body"); Catalog.Pin(manifestId,"candidate_original");
         return candidate;
@@ -61,7 +84,20 @@ public sealed partial class LabService
     {
         var artifact=Catalog.Get<Artifact>(candidate.BodyArtifactId);
         var input=Wire.Deserialize<CilInput>(await File.ReadAllTextAsync(await Artifacts.VerifiedPathAsync(artifact)));
-        string hash=candidate.Probe is null?(candidate.Policy is null?NativeLeafPolicy.Verify(input.Body,candidate.Method):NativeBodyPolicy.Verify(input.Body,candidate.Policy)).Hash:
+        string hash;
+        if(candidate.BodyPolicy==ManagedBodyPolicy.Qualification)
+        {
+            var image=await CodeArtifactAsync("art-"+candidate.Method.ModuleHash,"application/vnd.microsoft.portable-executable");
+            hash=ManagedBodyPolicy.Verify(input.Body,candidate.Method,image.Path).Hash;
+            if(candidate.CompiledArtifactId is not null)
+            {
+                var compiled=await CodeArtifactAsync(candidate.CompiledArtifactId,"application/vnd.microsoft.portable-executable");
+                if(!input.Body.SequenceEqual(CompiledBodyImporter.Import(compiled.Path,candidate.CompiledMethodToken!,image.Path,candidate.Method)))
+                    throw new LabException("artifact_corrupt","Candidate body differs from its compiled metadata remapping.");
+            }
+            else if(hash!=candidate.OriginalIlHash) throw new LabException("artifact_corrupt","Original-body control differs from the retained original.");
+        }
+        else hash=candidate.Probe is null?(candidate.Policy is null?NativeLeafPolicy.Verify(input.Body,candidate.Method):NativeBodyPolicy.Verify(input.Body,candidate.Policy)).Hash:
             Convert.ToHexStringLower(SHA256.HashData(input.Body));
         if(candidate.Probe is not null&&!input.Body.SequenceEqual(RewriteProbe(candidate.Method,candidate.Probe).Body))
             throw new LabException("artifact_corrupt","Probe body differs from its certified rewrite.");
@@ -102,7 +138,7 @@ public sealed partial class LabService
             exceptional_exit_token=candidate.Probe?.Fault?.ExceptionalExitToken??0,
             probe_local_signature=candidate.Probe?.Fault?.LocalSignatureToken??0,probe_local_count=candidate.Probe?.Fault?.LocalCount??0,
             return_local=candidate.Probe?.Fault?.ReturnLocal??0,
-            inliners=candidate.Inliners??[],
+            inliners=candidate.Inliners??[],body_policy=candidate.BodyPolicy??"restricted-int32-cil/1",
             selector=new { module_mvid=candidate.Method.ModuleMvid,method_token=candidate.Method.Token,
                 module_hash=candidate.Method.ModuleHash,signature=candidate.Method.SignatureHex,module_load_id=candidate.ModuleLoadIdentity } };
     private async Task VerifyMutationAdapterAsync(string targetId,CilCandidateRecord candidate,ProfilerHandshake native,CancellationToken cancellation)
@@ -128,7 +164,7 @@ public sealed partial class LabService
         if(candidate.SourceTarget.Id!=targetId||candidate.SourceTarget.StartTimeUtcTicks!=handshake.Target.StartTimeUtcTicks)
             throw new LabException("target_identity_changed","Candidate belongs to another target session.");
         var scenario=handshake.Scenarios.SingleOrDefault(s=>s.Id==scenarioId);
-        if(scenario is null||scenario.IsAsync||scenario.Affinity!=ThreadAffinity.Any||!(scenario.MutationScopes?.Contains(candidate.Scope)??false))
+        if(scenario is null||scenario.IsAsync||!(scenario.MutationScopes?.Contains(candidate.Scope)??false))
             throw new LabException("scenario_scope_mismatch","Registered synchronous setup oracle does not cover the selected method.");
         if(candidate.Inliners?.Any(c=>!(scenario.MutationScopes?.Contains(c.Scope)??false))==true)
             throw new LabException("scenario_scope_mismatch","Setup quiescence and correctness must declare every frozen caller scope.");
@@ -210,6 +246,7 @@ public sealed partial class LabService
         Grant execute,Grant nativeGrant,Operation operation,CancellationToken cancellation,bool restoreOnly,CompilationControlHooks? control=null,bool completeOperation=true)
     {
         int sequence=0; string? previousHash=null; long epoch=root.Target.Epoch; bool submitted=false,helperStarted=false;
+        IAsyncDisposable? applicationBoundary=null;
         using var deadline=CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(root.MaximumDurationSeconds));
         void Journal(string phase,object? evidence=null,string? error=null)
@@ -234,12 +271,20 @@ public sealed partial class LabService
             if(!result.Correct||!result.Quiescent) throw new LabException("correctness_failed","Application-owned mutation setup oracle failed.");
             activityScheduler.AcknowledgeQuiescence(run.Target);
         }
-        void Outcome(string phase,bool measurable,bool restored,bool tainted,string? failure,string? controlResultId=null)
+        async Task<bool> Outcome(string phase,bool measurable,bool restored,bool tainted,string? failure,string? controlResultId=null)
         {
+            if(applicationBoundary is not null)
+            {
+                try { Journal("application_boundary_releasing"); await applicationBoundary.DisposeAsync(); Journal("application_boundary_released"); }
+                catch(Exception error) when(error is not OutOfMemoryException)
+                { phase="tainted"; measurable=false; tainted=true; failure="application_boundary_release_unknown"; Journal("tainted",error:failure); }
+                finally { applicationBoundary=null; }
+            }
             var result=new MutationOutcome(root.Id+"-outcome",candidate.Id,phase,epoch,measurable,restored,tainted,failure,CompilationControlResultId:controlResultId);
             Catalog.Put(result.Id,"mutation_outcome",result);
             Journal("outcome_recorded",result);
             if(completeOperation) Catalog.Transition(operation.Id,tainted?OperationState.Tainted:failure is null?OperationState.Completed:OperationState.Failed,result.Id,failure);
+            return !tainted;
         }
         async Task Restore(CancellationToken token)
         {
@@ -269,10 +314,21 @@ public sealed partial class LabService
         {
             Policies.Authorize(parent,Catalog.Root,root.Target,candidate.Probe is null?Permission.ReplaceIl:Permission.InstallProbes,DateTimeOffset.UtcNow,candidate.ContentHash,candidate.Scope);
             Catalog.UseGrant(parent); Journal("permission_checked");
+            var handshake=await harness.HandshakeAsync(root.Target,deadline.Token);
+            if(handshake.Scenarios.Single(s=>s.Id==root.ScenarioId).Affinity==ThreadAffinity.ApplicationThread)
+            {
+                Policies.Authorize(execute,Catalog.Root,root.Target,Permission.ExecuteRegisteredScenario,DateTimeOffset.UtcNow);
+                Catalog.UseGrant(execute);
+                var boundaryRun=new Tedd.DotNetLab.Contracts.RunRequest(root.Id,Wire.Id("boundary"),"mutation-boundary",root.ScenarioId,"candidate",
+                    1,0,true,false,epoch,root.Target,execute,DateTimeOffset.UtcNow.AddSeconds(root.MaximumDurationSeconds+30),
+                    candidate.Scope,candidate.Inliners?.Select(c=>c.Scope).ToArray());
+                applicationBoundary=await harness.HoldMutationBoundaryAsync(boundaryRun,deadline.Token);
+                Journal("application_boundary_held");
+            }
             if(restoreOnly)
             {
                 submitted=true;
-                await Restore(deadline.Token); Outcome("restored",false,true,false,null); return true;
+                await Restore(deadline.Token); return await Outcome("restored",false,true,false,null);
             }
             var preflight=await Send("preflight",deadline.Token);
             if(preflight.GetProperty("body_hash").GetString()!=candidate.BodyHash||preflight.GetProperty("method_scope").GetString()!=candidate.Scope||
@@ -325,10 +381,10 @@ public sealed partial class LabService
                 Journal(control.Purpose=="compilation_control"?"control_original_body_rejit_started":control.Purpose+"_measurement_started"); await control.AfterApply(epoch,deadline.Token);
                 Journal(control.Purpose=="compilation_control"?"control_original_body_rejit_completed":control.Purpose+"_measurement_completed"); await Restore(deadline.Token);
                 string resultId=await control.Completed(epoch,deadline.Token); Journal(control.Purpose+"_completed",new { result_id=resultId });
-                Outcome(control.Purpose=="compilation_control"?"control_restored":"trial_arm_restored",false,true,false,null,
-                    control.Purpose=="compilation_control"?resultId:null); return true;
+                return await Outcome(control.Purpose=="compilation_control"?"control_restored":"trial_arm_restored",false,true,false,null,
+                    control.Purpose=="compilation_control"?resultId:null);
             }
-            Outcome("measurable",true,false,false,null); return true;
+            return await Outcome("measurable",true,false,false,null);
         }
         catch(Exception error) when(error is not OutOfMemoryException)
         {
@@ -361,14 +417,14 @@ public sealed partial class LabService
                             throw new LabException("target_tainted","Control measurement did not establish target quiescence.");
                     }
                     catch(Exception healthError) when(healthError is not OutOfMemoryException)
-                    { Journal("tainted",error:"control_quiescence_unknown"); Outcome("tainted",false,false,true,code); return false; }
+                    { Journal("tainted",error:"control_quiescence_unknown"); return await Outcome("tainted",false,false,true,code); }
                 }
                 if(helperStarted)
                 {
                     try { using var cleanup=new CancellationTokenSource(TimeSpan.FromSeconds(10)); await ProbeControlAsync(root.Target,epoch,candidate,parent,root.Id,"stop",cleanup.Token); }
-                    catch(Exception cleanupError) when(cleanupError is not OutOfMemoryException) { Journal("tainted",error:"probe_cleanup_unknown"); Outcome("tainted",false,false,true,code); return false; }
+                    catch(Exception cleanupError) when(cleanupError is not OutOfMemoryException) { Journal("tainted",error:"probe_cleanup_unknown"); return await Outcome("tainted",false,false,true,code); }
                 }
-                Journal("rejected",error:code); Outcome("rejected",false,false,false,code); return true;
+                Journal("rejected",error:code); return await Outcome("rejected",false,false,false,code);
             }
             try
             {
@@ -379,12 +435,12 @@ public sealed partial class LabService
                 if(status.GetProperty("transaction_id").GetString()!=root.NativeTransactionId||status.GetProperty("candidate_hash").GetString()!=candidate.BodyHash||
                     status.GetProperty("method_scope").GetString()!=candidate.Scope) throw new LabException("mutation_unverified","Native transaction identity is unknown.");
                 epoch=status.GetProperty("epoch").GetInt64FromString();
-                await Restore(recovery.Token); Outcome("restored",false,true,false,code); return true;
+                await Restore(recovery.Token); return await Outcome("restored",false,true,false,code);
             }
             catch(Exception recoveryError) when(recoveryError is not OutOfMemoryException)
             {
                 Journal("tainted",error:recoveryError is LabException failed?failed.Code:"restore_unknown");
-                Outcome("tainted",false,false,true,code); return false;
+                return await Outcome("tainted",false,false,true,code);
             }
         }
     }

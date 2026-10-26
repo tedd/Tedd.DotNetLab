@@ -10,6 +10,7 @@
 <ProjectReference Include="../../src\Tedd.DotNetLab.Probes\Tedd.DotNetLab.Probes.csproj" />
 <ProjectReference Include="../Tedd.DotNetLab.StatisticalQualification/Tedd.DotNetLab.StatisticalQualification.csproj" />
 <ProjectReference Include="../../samples/LabWorkload/LabWorkload.csproj" ReferenceOutputAssembly="false" />
+<ProjectReference Include="../Tedd.DotNetLab.LiveCandidate/Tedd.DotNetLab.LiveCandidate.csproj" ReferenceOutputAssembly="false" />
 <ProjectReference Include="../Tedd.DotNetLab.ControllerFault/Tedd.DotNetLab.ControllerFault.csproj" ReferenceOutputAssembly="false" />
 <ProjectReference Include="../Tedd.DotNetLab.NormalBaseline/Tedd.DotNetLab.NormalBaseline.csproj" ReferenceOutputAssembly="false" />
 <ProjectReference Include="../Tedd.DotNetLab.NormalCandidate/Tedd.DotNetLab.NormalCandidate.csproj" ReferenceOutputAssembly="false" />

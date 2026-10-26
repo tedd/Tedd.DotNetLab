@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>LabWorkload</AssemblyName>
+    <DefineConstants>$(DefineConstants);LIVE_REPLACEMENT_CANDIDATE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../samples/LabWorkload/*.cs" />
+    <ProjectReference Include="../../src/Tedd.DotNetLab.Harness/Tedd.DotNetLab.Harness.csproj" />
+    <ProjectReference Include="../../src/Tedd.DotNetLab.Probes/Tedd.DotNetLab.Probes.csproj" />
+  </ItemGroup>
+</Project>

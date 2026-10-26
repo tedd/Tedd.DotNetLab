@@ -120,6 +120,7 @@ public sealed class LabTools(LabService service)
             work.Id,Integer(work.ExpectedRevision),work.State),
         RecordDecision decision=>service.Decision(decision.ComparisonId,decision.Decision,decision.Rationale),
         RegisterCilCandidate candidate=>await service.RegisterCilAsync(candidate.BodyArtifactId,candidate.InspectionId,candidate.BaseIlHash,candidate.Components),
+        RegisterCompiledCilCandidate candidate=>await service.RegisterCompiledCilAsync(candidate.CompiledArtifactId,candidate.MethodToken,candidate.InspectionId,candidate.BaseIlHash,candidate.Components),
         RegisterNormalBuild build=>await service.RegisterNormalBuildAsync(build.EntryAssembly,build.Files),
         CreateConfirmationPlan plan=>service.FreezeConfirmation(new("",plan.SelectedCandidateId,plan.SourcePatchArtifactId,plan.SourceEquivalenceRationale,
             plan.BaselineBuildId,plan.CandidateBuildId,plan.BaselineVariant,plan.CandidateVariant,plan.Experiment,plan.ExploratoryEvidenceIds,default),plan.BaselineId,plan.BaselineAliasId),

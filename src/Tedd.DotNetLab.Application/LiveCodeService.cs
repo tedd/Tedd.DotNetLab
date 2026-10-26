@@ -31,8 +31,8 @@ public sealed partial class LabService
         bool mutation=supported&&reply.Rejit=="experimental"&&reply.Restore=="experimental"&&
             (reply.Startup&&reply.InlinerHandling=="experimental"||attached&&reply.InlinerHandling=="verified_noinline_only");
         capabilities["rejit"]=new(mutation?CapabilityState.Supported:CapabilityState.Unsupported,
-            mutation?attached?"Disposable attach adapter; verified no-inline static Int32 bodies and scoped untimed correctness required.":
-                "Disposable startup adapter; bounded static Int32 bodies and scoped untimed correctness required.":"Target is outside the mutation qualification matrix.");
+            mutation?attached?"Disposable attach adapter; verified no-inline managed bodies, existing metadata, and scoped untimed correctness required.":
+                "Disposable startup adapter; compiled managed bodies with existing metadata and scoped untimed correctness required; raw CIL/probes retain the Int32 subset.":"Target is outside the mutation qualification matrix.");
         capabilities["restore"]=new(mutation?CapabilityState.Supported:CapabilityState.Unsupported,
             mutation?"Original-version restore checks every affected method and application health; it does not restore heap or external effects.":"Qualified restoration is unavailable.");
         capabilities["inliner_handling"]=new(mutation&&reply.InlinerHandling=="experimental"?CapabilityState.Supported:CapabilityState.Unsupported,

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics;
 using Tedd.DotNetLab.Application;
 using Tedd.DotNetLab.Contracts;
 using Tedd.DotNetLab.Mcp;
@@ -47,6 +48,19 @@ public sealed class McpTests
         {
             var connections=await Task.WhenAll(Connect(workspace.Root,timeout.Token,shared:true),Connect(workspace.Root,timeout.Token,shared:true));
             first=connections[0]; second=connections[1];
+            var grantStart=RuntimeSupport.ControllerStartInfo(); grantStart.UseShellExecute=false;
+            grantStart.RedirectStandardOutput=true; grantStart.RedirectStandardError=true;
+            grantStart.ArgumentList.Add(Path.Combine(TestWorkspace.TaskRoot,"bin","Tedd.DotNetLab.Host","Release","net10.0","Tedd.DotNetLab.Host.dll"));
+            foreach(string argument in new[]{"grant",workspace.Root,Environment.ProcessId.ToString(),"observe","60","1"}) grantStart.ArgumentList.Add(argument);
+            using(var grantCli=Process.Start(grantStart)!)
+            {
+                string output=await grantCli.StandardOutput.ReadToEndAsync(timeout.Token);
+                string error=await grantCli.StandardError.ReadToEndAsync(timeout.Token);
+                await grantCli.WaitForExitAsync(timeout.Token); Assert.True(grantCli.ExitCode==0,error);
+                var grant=Wire.Deserialize<Grant>(output);
+                var retained=await Call(second,"lab.inspect",new { action="record",id=grant.Id },timeout.Token);
+                Assert.Contains(grant.Id,retained.ToString());
+            }
             var record=await Call(first,"lab.experiment",new { action="create_hypothesis",mechanism="shared-catalog",prediction="visible-to-both",evidence_ids=Array.Empty<string>() },timeout.Token);
             string id=record.GetProperty("id").GetString()!;
             var inspected=await Call(second,"lab.inspect",new { action="record",id },timeout.Token);
@@ -69,6 +83,19 @@ public sealed class McpTests
                 catch(IOException) { await Task.Delay(50,shutdown.Token); }
             }
         }
+    }
+    [Fact,Case("CT-MCP-LEAN-CATALOG","FR-060,FR-061,FR-074","M7","Contract")]
+    public async Task DefaultSchemasExcludeMaintenanceWhileCliWireContractsRemainAvailable()
+    {
+        using var workspace=new TestWorkspace(); using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await using var client=await Connect(workspace.Root,timeout.Token);
+        var catalog=await client.ListToolsAsync(cancellationToken:timeout.Token);
+        string schemas=string.Join('\n',catalog.Select(t=>t.JsonSchema.ToString()));
+        foreach(string action in new[]{"prepare_export","prepare_deletion","prepare_retention","recover_artifacts","verify_catalog_backup","release_references"})
+            Assert.DoesNotContain('"'+action+'"',schemas);
+        Assert.Contains("register_compiled_candidate",schemas);
+        Assert.IsType<PrepareDeletion>(Wire.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}"));
+        Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}",McpCatalog.Json));
     }
     private static async Task<JsonElement> Call(McpClient client,string tool,object request,CancellationToken cancellation)
     {

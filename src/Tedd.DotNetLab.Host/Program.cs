@@ -96,8 +96,8 @@ try
         builder.Logging.AddConsole(options=>options.LogToStandardErrorThreshold=LogLevel.Trace);
         builder.Logging.AddProvider(new ConnectionLog.Provider());
         builder.Services.AddSingleton(serveService); builder.Services.AddSingleton<LabTools>();
-        var server=builder.Services.AddMcpServer().WithStdioServerTransport().WithTools<McpTools>(Wire.Json).WithResources<LabTools>();
-        if(args.Length==3) server.WithTools<McpPatchTools>(Wire.Json);
+        var server=builder.Services.AddMcpServer().WithStdioServerTransport().WithTools<McpTools>(McpCatalog.Json).WithResources<LabTools>();
+        if(args.Length==3) server.WithTools<McpPatchTools>(McpCatalog.Json);
         using var host=builder.Build();
         ConnectionLog.Event("stdio_server_started");
         await host.RunAsync();

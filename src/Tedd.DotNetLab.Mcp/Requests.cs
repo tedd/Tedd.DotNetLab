@@ -44,6 +44,7 @@ public record InspectNative(string TargetId,string MethodId,string ExpectedTarge
 [JsonDerivedType(typeof(ReviseWorkItem),"revise_work_item")]
 [JsonDerivedType(typeof(RecordDecision),"record_decision")]
 [JsonDerivedType(typeof(RegisterCilCandidate),"register_cil_candidate")]
+[JsonDerivedType(typeof(RegisterCompiledCilCandidate),"register_compiled_candidate")]
 [JsonDerivedType(typeof(RegisterNormalBuild),"register_normal_build")]
 [JsonDerivedType(typeof(CreateConfirmationPlan),"create_confirmation_plan")]
 [JsonDerivedType(typeof(CreateBaseline),"create_baseline")]
@@ -98,6 +99,7 @@ public record CreateWorkItem(string Question,int Priority,IReadOnlyList<string> 
 public record ReviseWorkItem(string Id,string ExpectedRevision,string Question,int Priority,string State,IReadOnlyList<string> Dependencies,IReadOnlyList<string> EvidenceIds) : ExperimentRequest;
 public record RecordDecision(string ComparisonId,string Decision,string Rationale) : ExperimentRequest;
 public record RegisterCilCandidate(string BodyArtifactId,string InspectionId,string BaseIlHash,IReadOnlyList<string> Components) : ExperimentRequest;
+public record RegisterCompiledCilCandidate(string CompiledArtifactId,string MethodToken,string InspectionId,string BaseIlHash,IReadOnlyList<string> Components) : ExperimentRequest;
 public record RegisterNormalBuild(string EntryAssembly,IReadOnlyList<BuildFile> Files) : ExperimentRequest;
 public record CreateConfirmationPlan(string SelectedCandidateId,string SourcePatchArtifactId,string SourceEquivalenceRationale,
     string BaselineBuildId,string CandidateBuildId,string BaselineVariant,string CandidateVariant,ExperimentPlan Experiment,

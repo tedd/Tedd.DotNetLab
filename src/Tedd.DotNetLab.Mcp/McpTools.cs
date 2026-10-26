@@ -19,7 +19,7 @@ public sealed class McpTools(LabTools tools)
     [Description("Maintain hypotheses, baselines/aliases, frozen plans including individual-observation quantile designs, verified observation datasets, registered builds, candidate metadata, work items, and decisions.")]
     public Task<CallToolResult> Experiment(ExperimentRequest request)=>McpResponse.Result(tools.Experiment(request));
     [McpServerTool(Name="lab.run",Destructive=true,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
-    [Description("Start granted capture, scenario, individual-operation timing, confirmation, export, or deletion jobs; compare retained quantiles, analyze sampled stacks, recover artifacts, or maintain the catalog; poll, cancel, or stop by operation ID.")]
+    [Description("Start granted capture, scenario, individual-operation timing, or confirmation jobs; compare retained quantiles or analyze sampled stacks; poll, cancel, or stop by operation ID.")]
     public Task<CallToolResult> Run(RunRequest request)=>McpResponse.Result(tools.Run(request));
     [McpServerTool(Name="lab.query",ReadOnly=true,Destructive=false,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
     [Description("Query retained metrics, individual-latency slices, sampled hotspots/method evidence, run windows, GC/suspensions, counter series and time windows, history, verified exports, availability, and bounded artifact slices.")]

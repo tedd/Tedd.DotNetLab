@@ -57,7 +57,7 @@ dotnet build Tedd.DotNetLab.sln -c Release --no-restore
 [`tools/build-windows-package.ps1`](../tools/build-windows-package.ps1) creates a deterministic, hash-manifested `Tedd.DotNetLab-1.0.0-windows-x64.zip` archive from a clean Git commit:
 
 1. Verifies the repository working tree is clean and resolves the exact 40-char Git commit SHA.
-2. Compiles and runs all 5 native C++ profiler contract tests (`native/build-native.ps1`).
+2. Compiles and runs all 6 native C++ profiler contract tests (`native/build-native.ps1`).
 3. Runs `dotnet restore --locked-mode` and publishes `Tedd.DotNetLab.Host` + `Tedd.DotNetLab.TraceWorker` (framework-dependent, untrimmed, ReadyToRun disabled) along with the bundled `skills/dotnetlab` skill, `schemas/`, `docs/`, and third-party NuGet/native license notices.
 4. Verifies every locked NuGet archive's cryptographic content & archive SHA-512 via `Tedd.DotNetLab.PackageHashes` and records Authenticode status for every `.dll`/`.exe`.
 5. Invokes [`tools/windows_package.py`](../tools/windows_package.py) to produce a reproducible ZIP and immediately runs offline structural & SHA-256 verification.

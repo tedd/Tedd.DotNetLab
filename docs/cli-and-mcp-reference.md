@@ -52,12 +52,9 @@ Copies the bundled `dotnetlab` agent skill and registers the `dotnetlab` MCP ser
 
 `Tedd.DotNetLab` enforces a strict **human-in-the-loop capability boundary**: MCP tools can discover processes, inspect stored records, and prepare immutable experiment/confirmation/attachment plans, **but an AI agent cannot self-authorize attaching to a live process, executing code, mutating IL, launching builds, or deleting/exporting evidence.**
 
-### Catalog Exclusivity Rule When Issuing Grants
+### Issuing Grants While Connected
 
-SQLite catalog writes belong to one controller at a time. When an AI agent needs a grant:
-1. Ensure no dedicated `serve` process is holding the workspace lock, or let the shared `connect` controller idle out (5 seconds with no active clients/jobs).
-2. Run the human CLI `grant*` command below.
-3. Reconnect/continue in the AI client—the agent will revalidate the target's `(PID, start_time_utc_ticks, epoch)` before using the grant.
+CLI commands against a workspace with a running shared `connect` controller forward over its current-user-only named pipe. Issue `grant*` commands while MCP clients remain connected; the controller serializes catalog writes. The agent revalidates `(PID, start_time_utc_ticks, epoch)` before using the grant. A dedicated `serve` process does not expose this forwarding endpoint and must release its workspace before another CLI process opens it.
 
 ### Grant Commands
 
@@ -132,8 +129,8 @@ Every MCP tool accepts a single top-level argument `{"request": { ... }}` using 
 | `create_confirmation_plan` | Freezes a confirmatory holdout plan binding baseline & candidate normal builds, source diff/manifest, equivalence rationale, and prior exploratory evidence. |
 | `prepare_profiler_attachment` | Freezes target/runtime/binary SHA-256 identity for one-shot Windows live profiler attachment. |
 | `register_cil_candidate` | Validates a replacement CIL method body against metadata/signature/local/branch safety contracts. |
+| `register_compiled_candidate` | Extracts a selected method from an imported rebuilt assembly and remaps its CIL references into the live target's existing metadata; accepts `compiled_artifact_id`, `method_token`, `inspection_id`, `base_il_hash`, and `components`. Does not execute or load the candidate assembly. |
 | `create_compilation_control` / `create_native_trial` / `create_native_series` | Freezes baseline ReJIT compilation controls and paired native ReJIT trials/multi-session series. |
-| `prepare_export` / `prepare_bundle_import` / `prepare_deletion` / `prepare_retention` / `pin_evidence` / `prepare_reference_release` | Prepares auditable evidence-lifecycle plans. |
 
 ### 4. `lab.run` — Asynchronous Execution, Capture, and Lifecycle Jobs
 
@@ -147,8 +144,6 @@ Every MCP tool accepts a single top-level argument `{"request": { ... }}` using 
 | `start_confirmation` | Launches fresh, diagnostics-disabled OS processes per randomized block arm to confirm a candidate in normal builds. |
 | `attach_profiler` / `reconcile_profiler_attachment` | Executes or reconciles a granted live Windows profiler attachment. |
 | `compare_native_series` / `register_native_series_results` | Evaluates multi-session native ReJIT trial series. |
-| `start_export` / `import_bundle` / `analyze_imported_capture` | Exports privacy-filtered or full evidence bundles and imports external bundles into a quarantined namespace. |
-| `start_deletion` / `release_references` / `recover_artifacts` / `backup_catalog` / `checkpoint_catalog` | Executes granted storage maintenance and integrity recovery operations. |
 | `status` / `cancel` | Polls read-only operation state or requests cooperative/process cancellation. |
 
 ### 5. `lab.query` — Evidence Views and Bounded Slice Retrieval
@@ -157,7 +152,20 @@ Supported `view` values:
 - **Hotspots & Traces:** `hotspots` (inclusive/exclusive rankings), `sampled_method`, `metric`, `gc_timeline`, `suspensions`, `counters`, `counter_window`, `run_window`, `available_evidence`.
 - **Latencies & Native:** `individual_latency_slice`, `verify_native_trial`, `native_series_comparison`.
 - **Catalog & Chunks:** `record`, `history`, `artifact_slice` (reads chunked oversized MCP responses or artifacts), `controller_resources`, `operation_policy`.
-- **Storage & Bundles:** `artifact_retention`, `artifact_references`, `artifact_recovery`, `verify_catalog_backup`, `verify_export`, `verify_bundle_import`, `imported_members`.
+
+Evidence administration is available through `dotnetlab call <workspace> <tool>`, with a JSON request on stdin. These actions are excluded from connected MCP schemas:
+
+| CLI tool | Actions / views |
+| --- | --- |
+| `lab.experiment` | `prepare_export`, `prepare_bundle_import`, `prepare_deletion`, `prepare_retention`, `pin_evidence`, `prepare_reference_release` |
+| `lab.run` | `start_export`, `import_bundle`, `analyze_imported_capture`, `start_deletion`, `release_references`, `recover_artifacts`, `backup_catalog`, `checkpoint_catalog` |
+| `lab.query` | `artifact_retention`, `artifact_references`, `artifact_recovery`, `verify_catalog_backup`, `verify_export`, `verify_bundle_import`, `imported_members` |
+
+Existing grant requirements apply to administrative operations. For example:
+
+```powershell
+'{"action":"backup_catalog","idempotency_key":"backup-1"}' | dotnetlab call <workspace> lab.run
+```
 
 ### 6. `lab.compare` — Statistical Inference and Promotion Gates
 
