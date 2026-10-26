@@ -26,7 +26,7 @@ public sealed partial class LabService
             approvedProfilerPath,ProfilerAttachmentIdentity.Hash(binary),binary.Length,runtime,ProfilerAttachmentIdentity.ProfilerId,0x40024);
         Catalog.Put(plan.Id,"profiler_attachment_plan",plan); return plan;
     }
-    // Human CLI only; the grant authorizes the exact target session, plan, and approved native bytes.
+    // Local CLI only; the grant authorizes the exact target session, plan, and approved native bytes.
     public Grant IssueProfilerAttachmentGrant(string planId,int seconds,int maximumOperations=1)
     {
         var plan=Record<ProfilerAttachmentPlan>(planId,"profiler_attachment_plan");

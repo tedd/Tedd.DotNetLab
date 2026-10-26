@@ -55,7 +55,7 @@ public sealed partial class LabService
     }
 
     private TargetIdentity ConfirmationTarget(ConfirmationPlan plan)=>new(plan.Id,0,0,plan.Id,Record<NormalBuild>(plan.BaselineBuildId,"normal_build").RuntimeVersion,"X64");
-    // Human CLI only: authorizes startup of the exact retained application bundles, including their startup effects.
+    // Local CLI only: authorizes startup of the exact retained application bundles, including their startup effects.
     public Grant IssueConfirmationGrant(string planId,int seconds,int maximumOperations)
     {
         var plan=Record<ConfirmationPlan>(planId,"confirmation_plan");

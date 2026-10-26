@@ -62,7 +62,7 @@ public sealed partial class LabService
         if(state.Pinned||state.RetainedOwners>0) throw new LabException("evidence_protected","Retained owners or pins prevent deletion.");
     }
     private static TargetIdentity DeletionTarget(DeletionPlan plan)=>new(plan.Id,0,0,plan.Id,"workspace","local");
-    // Human CLI only; authority binds the complete frozen inclusion list and retention policy.
+    // Local CLI only; authority binds the complete frozen inclusion list and retention policy.
     public Grant IssueDeletionGrant(string planId,int seconds,int maximumOperations)
     {
         var plan=Record<DeletionPlan>(planId,"deletion_plan");

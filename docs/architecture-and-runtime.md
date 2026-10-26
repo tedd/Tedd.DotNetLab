@@ -11,7 +11,7 @@ Instead of relying on ad-hoc console timers or unverified AI guesses, `Tedd.DotN
 ```mermaid
 flowchart LR
     Agent["AI Client (Codex / Claude / Cursor / Antigravity)"]
-    CLI["Human CLI (Grants & Admin)"]
+    CLI["Local CLI (Grants & Admin)"]
     Connector["Stdio Connector (dotnetlab connect)"]
     Controller["Shared Workspace Controller"]
     Catalog[("SQLite Catalog & SHA-256 Artifacts")]
@@ -104,7 +104,7 @@ EventPipe `.nettrace` parsing and sampled-stack aggregation execute out-of-proce
 | Component / Workflow | Windows x64 | Linux x64 | Notes |
 | --- | --- | --- | --- |
 | **Controller & CLI (`Tedd.DotNetLab.Host`)** | CoreCLR `.NET 10.0+` (including `.NET 11` / `.NET 12+` previews & RCs) | CoreCLR `.NET 10.0+` (including `.NET 11` / `.NET 12+` previews & RCs) | Built with `RollForward=Major`; installer sets `DOTNET_ROLL_FORWARD_TO_PRERELEASE=1` so preview-only machines work seamlessly. |
-| **EventPipe Capture & Trace Analysis** | CoreCLR `.NET 6.0+` targets | CoreCLR `.NET 6.0+` targets | Requires human `observe` grant for the target `(PID, start_time)`. |
+| **EventPipe Capture & Trace Analysis** | CoreCLR `.NET 6.0+` targets | CoreCLR `.NET 6.0+` targets | Requires a scoped `observe` grant for the target `(PID, start_time)`. |
 | **Managed Harness Execution & Normal-Build Confirmation** | CoreCLR `.NET 6.0+` (including `.NET 8`, `9`, `10`, `11.0-rc.*`, `12.0-*`) | CoreCLR `.NET 6.0+` (including `.NET 8`, `9`, `10`, `11.0-rc.*`, `12.0-*`) | Resolves exact or roll-forward target runtime across installed `dotnet` roots (`DOTNET_ROOT`, `PATH`, `~/.dotnet`, system `dotnet`). |
 | **Raw `Core_Root` / `corerun.exe` Development Builds** | `12.0.0-dev` (quiet validation) | Separate qualification | Windows `quiet-validation` with leased `CoreLib`/`CoreCLR`/`clrjit` SHA-256 hashes at epoch `0`. |
 | **Optional Exact Runtime Pin (`target_runtime_version`)** | Any exact SemVer `>= 6.0.0` (including preview/RC suffix) | Any exact SemVer `>= 6.0.0` (including preview/RC suffix) | Enforces `not_comparable` rejection if the target process differs from the frozen plan's runtime version. |

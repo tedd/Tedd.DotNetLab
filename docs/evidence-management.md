@@ -10,7 +10,7 @@ Linux catalog workspaces require ext4, XFS, Btrfs, or local overlayfs. Windows-b
 
 The default privacy-filtered policy exports record identity/kind/revision/hash metadata and omits record payloads and original artifact bytes. It records every omission in the manifest. This policy does not attempt to remove sensitive strings from arbitrary binary traces, code, or JSON, and it is not an anonymization claim. An artifact omitted by this policy is not silently advertised as included. Source hashes remain distinct from hashes of redacted exported metadata.
 
-The human CLI issues an exact-plan grant:
+The local CLI issues an exact-plan grant:
 
 ```text
 dotnetlab grant-export <workspace> <plan-id> <seconds> <maximum-operations>
@@ -31,7 +31,7 @@ Before completion, the writer flushes and closes the archive, reopens it, valida
 
 ## Import and query a bundle
 
-The human CLI `import <workspace> <path> application/zip` seals an explicitly supplied bundle in the destination workspace. ZIP input is bounded by the workspace capture-byte limit and at most 2 GiB; other supported file imports retain their 64 MiB cap. Available disk space must preserve the workspace reserve. File ingestion does not load or execute managed code or establish target access. MCP uses the retained artifact ID rather than an arbitrary filesystem path.
+The local CLI `import <workspace> <path> application/zip` seals an explicitly supplied bundle in the destination workspace. ZIP input is bounded by the workspace capture-byte limit and at most 2 GiB; other supported file imports retain their 64 MiB cap. Available disk space must preserve the workspace reserve. File ingestion does not load or execute managed code or establish target access. MCP uses the retained artifact ID rather than an arbitrary filesystem path.
 
 `lab.experiment.prepare_bundle_import` takes `artifact_id`, `maximum_decompressed_bytes` as an exact decimal Int64 string (default 1 GiB, maximum 2 GiB), and `maximum_duration_seconds` (default 300, maximum 600). Preparation freezes the bundle hash and manifest hash and validates its declared layout and budget. `lab.run.import_bundle` takes the plan ID and idempotency key and returns a durable operation ID. Ordinary status/cancel actions apply. An identical retry returns its original operation; changed requests conflict.
 
@@ -53,7 +53,7 @@ Use the resulting analysis ID with ordinary GC, counter, metric, and availabilit
 
 `action=prepare_deletion` takes a distinct `artifact_ids` selection and a `reason`, with at most 1,000 artifacts. It can select other artifact types explicitly. Baseline, confirmation, comparison, native recovery, and export pins prevent deletion. `action=pin_evidence` takes an artifact ID and an existing record's `owner_id`; each owner retains an independent indefinite reference. Catalog references can also carry an explicit expiry. Repeating a reference can extend its lifetime but cannot shorten it, and advances its persistent revision. `lab.query` with `view=artifact_retention` reports pins, active owner count, and deletion state. `view=artifact_references` takes the artifact ID, a page limit up to 100, and an optional artifact-bound cursor; it reports owner and reference revisions from a consistent page read. This live view can change between page requests.
 
-After reviewing the plan, the human CLI issues the separate permission:
+After reviewing the plan, the local CLI issues the separate permission:
 
 ```text
 dotnetlab grant-deletion <workspace> <plan-id> <seconds> <maximum-operations>
@@ -65,7 +65,7 @@ Cancellation applies before the intent commits. After commitment, the controller
 
 ## Release user references
 
-`lab.experiment` with `action=prepare_reference_release` takes `selection` as 1–100 distinct `{artifact_id, owner_id}` pairs and a bounded `reason`. It freezes each reference's revision and expiry together with its owner's record revision and hash. The human CLI issues an exact-plan `delete_evidence` grant:
+`lab.experiment` with `action=prepare_reference_release` takes `selection` as 1–100 distinct `{artifact_id, owner_id}` pairs and a bounded `reason`. It freezes each reference's revision and expiry together with its owner's record revision and hash. The local CLI issues an exact-plan `delete_evidence` grant:
 
 ```text
 dotnetlab grant-release <workspace> <plan-id> <seconds> <maximum-operations>

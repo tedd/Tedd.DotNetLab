@@ -29,7 +29,7 @@ public sealed partial class LabService
         Catalog.Put(plan.Id,"reference_release_plan",plan); return plan;
     }
     private static TargetIdentity ReferenceReleaseTarget(ReferenceReleasePlan plan)=>new(plan.Id,0,0,plan.Id,"workspace","local");
-    // Human CLI only. A release grant cannot authorize removing bytes or releasing a system pin.
+    // Local CLI only. A release grant cannot authorize removing bytes or releasing a system pin.
     public Grant IssueReferenceReleaseGrant(string planId,int seconds,int maximumOperations)
     {
         var plan=Record<ReferenceReleasePlan>(planId,"reference_release_plan");

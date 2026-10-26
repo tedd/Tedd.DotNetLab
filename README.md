@@ -9,7 +9,7 @@ When you ask an AI agent to optimize or debug a .NET application on its own, it 
 - Captures live **EventPipe CPU, allocation, GC pause, and runtime counter** traces from running .NET processes and parses them in memory-bounded isolated workers.
 - Runs **preregistered, randomized block experiments** ($A/B$, multi-variant, $2 \times 2$ factorial, and cluster-bootstrapped p95/p99 tail quantiles) with built-in correctness validation and allocation guardrails.
 - Optionally inspects **live JIT x64 assembly**, installs bounded **method probes**, and tests sub-second **live CIL ReJIT** candidates via a native C++ `ICorProfilerInfo12` adapter.
-- Confirms winning optimizations in **fresh, diagnostics-disabled OS processes** before changes are promoted to source code, while keeping a **human-in-the-loop CLI grant gate** over every live attach, execution, or mutation.
+- Confirms winning optimizations in **fresh, diagnostics-disabled OS processes** before changes are promoted to source code, with **scoped CLI grants** governing live attachment, execution, and mutation.
 
 ---
 
@@ -280,7 +280,7 @@ dotnet add package Tedd.DotNetLab.Harness
 Once installed, restart or reload your AI coding agent so the `dotnetlab` MCP tools (`lab.discover`, `lab.inspect`, `lab.experiment`, `lab.run`, `lab.query`, `lab.compare`) and the `dotnetlab` skill are active.
 
 > [!IMPORTANT]
-> **How Human Security Grants Work:** By design, an AI agent cannot silently attach to live processes, execute code, or launch builds without your consent. When the agent discovers your target process or freezes a confirmation plan, it will give you a one-line `dotnetlab grant ...` command to run in your terminal (for example, `dotnetlab grant <workspace> <pid> observe 300 5`). Once you run it, tell the agent **"Granted"** and it will execute the measurement autonomously.
+> **Scoped Grants and Optional Manual Approval:** The DotNetLab skill issues bounded CLI grants for the targets and operations covered by your task, allowing repeated measurements and live replacements without terminal handoffs. Grants still bind the target or immutable plan, expiry, and operation budget. To review each grant yourself, instruct the agent to require manual approval before issuing grants; you can approve the command or run it in your terminal.
 
 ### 1. Profile a Live .NET Application & Find Hotspots (Zero Code Changes)
 
@@ -353,7 +353,7 @@ Detailed architectural, statistical, security, and operational documentation liv
 | Document | Contents |
 | --- | --- |
 | [**Architecture & Runtime Integration**](docs/architecture-and-runtime.md) | Shared controller topology, named pipes, machine-wide measurement mutex, `TraceWorker` Job Object / cgroup v2 containment, oversized MCP chunking, and runtime compatibility matrix. |
-| [**CLI & MCP Reference**](docs/cli-and-mcp-reference.md) | Complete reference for `dotnetlab` CLI commands, human security grants, all 6+1 MCP tools (`lab.discover`, `lab.inspect`, `lab.experiment`, `lab.run`, `lab.query`, `lab.compare`, `lab.patch`), and JSON Schemas. |
+| [**CLI & MCP Reference**](docs/cli-and-mcp-reference.md) | Complete reference for `dotnetlab` CLI commands, scoped security grants, all 6+1 MCP tools (`lab.discover`, `lab.inspect`, `lab.experiment`, `lab.run`, `lab.query`, `lab.compare`, `lab.patch`), and JSON Schemas. |
 | [**Harness Integration Guide**](docs/harness-integration.md) | Embedding `Tedd.DotNetLab.Harness` (`ISynchronousScenario`, `IAsynchronousScenario`, `ApplicationThreadDispatcher`, `ListenAsync`, and `RunOwnedAsync`). |
 | [**Statistical Contract**](docs/statistical-contract.md) | Paired log-ratio inference, Holm-Bonferroni multiplicity, TOST equivalence, $2 \times 2$ factorial contrasts, cluster-bootstrapped quantiles, and simulation qualification. |
 | [**Native Qualification & Confirmation**](docs/native-qualification.md) | CoreCLR `ICorProfilerInfo12` startup/attach scope, x64 disassembly snapshots, method probes, bounded CIL ReJIT safety/restoration, and fresh-process confirmation rules. |

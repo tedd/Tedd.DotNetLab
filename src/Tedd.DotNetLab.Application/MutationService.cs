@@ -63,7 +63,7 @@ public sealed partial class LabService
         Catalog.Pin(artifact.Id,"candidate_body"); Catalog.Pin(manifestId,"candidate_original");
         return candidate;
     }
-    // Human CLI only. The parent grant binds the complete candidate manifest, not merely its opcode bytes.
+    // Local CLI only. The parent grant binds the complete candidate manifest, not merely its opcode bytes.
     public Grant IssueMutationGrant(string targetId,string candidateId,int seconds,int maximumOperations)
     {
         var candidate=CilCandidate(candidateId); var target=Target(targetId).Identity;
@@ -107,7 +107,7 @@ public sealed partial class LabService
     }
     private Grant MutationGrant(string grantId,TargetIdentity target,CilCandidateRecord candidate)
     {
-        if(Catalog.Get(grantId).Kind!="grant") throw new LabException("permission_denied","Expected a human-issued mutation grant.");
+        if(Catalog.Get(grantId).Kind!="grant") throw new LabException("permission_denied","Expected an issued mutation grant.");
         var grant=Catalog.Get<Grant>(grantId);
         Policies.Authorize(grant,Catalog.Root,target,candidate.Probe is null?Permission.ReplaceIl:Permission.InstallProbes,DateTimeOffset.UtcNow,candidate.ContentHash,candidate.Scope);
         targets.Verify(target,target.Epoch); return grant;

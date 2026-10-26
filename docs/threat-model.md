@@ -2,7 +2,7 @@
 
 The protected assets are target identity and execution state, scoped grants, mutation/restoration evidence, immutable plans and artifacts, and the privacy of diagnostic data. The trusted principals are the local developer and application owner. The controller, harness, parser worker, and profiler execute under that developer's account. The operating system, pinned runtime, approved binaries, and the workspace's access controls are prerequisites for these boundaries.
 
-Trace strings, imported bundle members, scenario results, model-generated requests, and native control frames are data. They cannot issue a grant, add an arbitrary executor, redefine an existing plan, or turn incomplete evidence into a successful result. The model-facing interface is local stdio with six base tools and an explicitly enabled seventh patch tool. The human CLI issues scoped grants independently.
+Trace strings, imported bundle members, scenario results, model-generated requests, and native control frames are data. They cannot issue a grant, add an arbitrary executor, redefine an existing plan, or turn incomplete evidence into a successful result. The model-facing interface is local stdio with six base tools and an explicitly enabled seventh patch tool. The local CLI issues scoped grants independently of MCP requests. An agent with shell access may issue them within the user's authorized task. Optional manual approval is enforced by the agent workflow, not by caller authentication; the CLI does not distinguish a human from another process under the same account.
 
 | Boundary / threat | Enforcement | Residual scope |
 | --- | --- | --- |

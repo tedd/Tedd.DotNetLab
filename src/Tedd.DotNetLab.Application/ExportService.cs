@@ -37,14 +37,14 @@ public sealed partial class LabService
         Catalog.Put(plan.Id,"export_plan",plan); return plan;
     }
     private static TargetIdentity ExportTarget(ExportPlan plan)=>new(plan.Id,0,0,plan.Id,"workspace","local");
-    // Human CLI only. Raw-trace permission is an explicit separate choice, never inferred from a selected record.
+    // Local CLI only. Raw-trace permission is an explicit separate choice, never inferred from a selected record.
     public Grant IssueExportGrant(string planId,int seconds,int maximumOperations,bool allowRawTrace=false)
     {
         var plan=Record<ExportPlan>(planId,"export_plan");
         if(seconds is <1 or >3600||maximumOperations is <1 or >1000)
             throw new LabException("invalid_request","Invalid export grant lifetime or budget.");
         if(!plan.PrivacyFiltered&&plan.Artifacts.Count>0&&!allowRawTrace)
-            throw new LabException("permission_denied","Unfiltered artifact bytes require explicit human raw-evidence consent; a media-type label cannot prove that content is nonsensitive.");
+            throw new LabException("permission_denied","Unfiltered artifact bytes require explicit raw-evidence consent; a media-type label cannot prove that content is nonsensitive.");
         var grant=new Grant(Wire.Id("grant"),Catalog.Root,plan.Id,0,Permission.ExportEvidence,DateTimeOffset.UtcNow.AddSeconds(seconds),maximumOperations,plan.ContentHash);
         Catalog.Put(grant.Id,"grant",grant); return grant;
     }

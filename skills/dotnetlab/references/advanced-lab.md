@@ -14,7 +14,7 @@ Same-process harness blocks and live CIL ReJIT trials share process history (Tie
 
 ### Step-by-Step Confirmation Workflow
 
-1. **Import Artifacts (CLI):** Build baseline and candidate Release outputs into clean staging directories under the designated workspace/scratch root, plus a unified diff patch file. Import all files into the workspace catalog (while controller is idle/stopped):
+1. **Import Artifacts (CLI):** Build baseline and candidate Release outputs into clean staging directories under the designated workspace/scratch root, plus a unified diff patch file. Import all files into the workspace catalog (shared `connect` clients can remain connected; dedicated `serve` must release the workspace):
    ```text
    <host> import <workspace> <path-to-file.dll> application/vnd.microsoft.portable-executable
    <host> import <workspace> <path-to-file.json> application/json
@@ -24,15 +24,15 @@ Same-process harness blocks and live CIL ReJIT trials share process history (Tie
    ```json
    {"request":{"action":"register_normal_build","entry_assembly":"MyBench.dll","files":[{"name":"MyBench.dll","artifact_id":"art_..."},{"name":"MyBench.deps.json","artifact_id":"art_..."},{"name":"MyBench.runtimeconfig.json","artifact_id":"art_..."},{"name":"Tedd.DotNetLab.Harness.dll","artifact_id":"art_..."},{"name":"Tedd.DotNetLab.Contracts.dll","artifact_id":"art_..."},{"name":"Tedd.DotNetLab.Transport.Local.dll","artifact_id":"art_..."}]}}
    ```
-   *(Optional JIT Inspection)*: To inspect emitted Tier 1 x64 assembly of a registered build before running confirmation blocks, have the human run `<host> grant-build <workspace> <build-id> <seconds> <max-ops>` and launch `capture_jit_disasm` with `build_id`.
+   *(Optional JIT Inspection)*: To inspect emitted Tier 1 x64 assembly of a registered build before running confirmation blocks, issue `<host> grant-build <workspace> <build-id> <seconds> <max-ops>` and launch `capture_jit_disasm` with `build_id`.
 3. **Freeze Confirmation Plan (`lab.experiment`):**
    Call `create_confirmation_plan` with `selected_candidate_id`, `source_patch_artifact_id`, `source_equivalence_rationale`, `baseline_build_id`, `candidate_build_id`, `baseline_variant`, `candidate_variant`, `exploratory_evidence_ids`, and nested `experiment` (`fresh_normal_build=true`, `confirmatory=true`, `independent_blocks=true`, `profile="quiet-validation"`, `blocks >= 10`, frozen `primary_policy` and `guardrail_policies`, and **no** `compilation_control_id`).
-4. **Human Confirmation Grant & Launch:**
-   Verify startup/cleanup have no unauthorized external/DB side effects -> stop/idle controller -> human issues:
+4. **Confirmation Grant & Launch:**
+   Verify startup/cleanup have no unauthorized external/DB side effects, then issue the grant within the authorized task (obtain approval first if the user requires manual approval):
    ```text
    <host> grant-confirmation <workspace> <confirmation-plan-id> <seconds> <max-ops>
    ```
-   Reconnect and call `lab.run`:
+   Call `lab.run`:
    ```json
    {"request":{"action":"start_confirmation","plan_id":"cpl_...","grant_id":"grt_conf","idempotency_key":"confirm-1"}}
    ```
@@ -70,11 +70,11 @@ When MCP stdio is unavailable or an outer host lock must wrap a multi-step measu
 '{"action":"profiles"}' | dotnet $HostDll call $Workspace lab.discover
 ```
 
-CLI `call` enforces the exact same human grants, schemas, idempotency keys, and safety contracts as MCP.
+CLI `call` enforces the exact same scoped grants, schemas, idempotency keys, and safety contracts as MCP.
 
 ## 4. Error Handling, Idempotency & Catalog Maintenance
 
 - **`catalog_busy`:** Transient SQLite read/status contention. Wait briefly and retry **only that `status` or `query` read**—never restart a timed workload or expand run count.
 - **Lost Response / Timeout:** Transport timeout does **not** prove non-submission. Query `lab.query` `{"request":{"view":"history","kind":"operation","limit":20}}` or `operation_policy` before replaying; intentional replay must reuse the exact `idempotency_key` and identical payload.
 - **Target Restart / Epoch Drift:** Any target restart or rebuild changes PID or increments epoch; re-run `lab.discover` (`targets`, `scenarios`) and bind fresh plans/grants.
-- **Catalog & Artifact Lifecycle:** `pin_evidence` protects critical artifacts; `backup_catalog`, `checkpoint_catalog`, `recover_artifacts`, and human-granted `prepare_export`/`start_export`, `prepare_deletion`/`start_deletion`, and `prepare_reference_release`/`release_references` are explicit administrative actions—never delete catalog files manually from disk.
+- **Catalog & Artifact Lifecycle:** `pin_evidence` protects critical artifacts; `backup_catalog`, `checkpoint_catalog`, `recover_artifacts`, and grant-authorized `prepare_export`/`start_export`, `prepare_deletion`/`start_deletion`, and `prepare_reference_release`/`release_references` are explicit administrative actions—never delete catalog files manually from disk.

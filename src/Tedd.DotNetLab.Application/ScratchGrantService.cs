@@ -50,7 +50,7 @@ public sealed partial class LabService
         return true;
     }
 
-    // Human CLI only: authorizes targets built and run strictly under an approved disposable scratch directory.
+    // Local CLI only: authorizes targets built and run strictly under an approved disposable scratch directory.
     public Grant IssueScratchGrant(string scratchDirectory, Permission permission, int seconds, int maximumOperations)
     {
         if (permission is not (Permission.Observe or Permission.ExecuteRegisteredScenario))
@@ -73,7 +73,7 @@ public sealed partial class LabService
         return new ScratchGrantPair(execute, observe, execute.ContentHash!);
     }
 
-    // Human CLI only: authorizes launching a sealed registered NormalBuild (e.g. for owned JIT disassembly).
+    // Local CLI only: authorizes launching a sealed registered NormalBuild (e.g. for owned JIT disassembly).
     public Grant IssueBuildGrant(string buildId, int seconds, int maximumOperations)
     {
         var build = Record<NormalBuild>(buildId, "normal_build");

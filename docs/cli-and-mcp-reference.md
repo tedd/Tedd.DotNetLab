@@ -1,6 +1,6 @@
 # CLI and MCP Reference
 
-This document covers the `Tedd.DotNetLab.Host` (`dotnetlab`) command-line interface, the human-in-the-loop authorization grant model, and the MCP tool catalog exposed to AI coding agents.
+This document covers the `Tedd.DotNetLab.Host` (`dotnetlab`) command-line interface, the scoped authorization grant model, and the MCP tool catalog exposed to AI coding agents.
 
 > [!NOTE]
 > If you installed `Tedd.DotNetLab` via `tools/install.ps1` or `tools/install.sh`, `dotnetlab` is available directly on your `PATH`. When running from a build directory or release ZIP without the shim, replace `dotnetlab` below with `dotnet /path/to/Tedd.DotNetLab.Host.dll`.
@@ -41,16 +41,16 @@ Copies the bundled `dotnetlab` agent skill and registers the `dotnetlab` MCP ser
 | `dotnetlab profiles` | Lists built-in diagnostic/capture profiles (`quiet-validation`, `baseline-context`, `cpu-diagnostic`, `allocation-diagnostic`, `runtime-metrics-context`, `targeted-probes`). |
 | `dotnetlab schema <name>` | Prints a versioned JSON Schema (`measurement`, `plan`, `comparison`, `capabilities`, `error`, etc.) without opening a workspace. |
 | `dotnetlab call <workspace> <tool>` | Invokes any MCP tool (`lab.discover`, `lab.inspect`, `lab.experiment`, `lab.run`, `lab.query`, `lab.compare`, `lab.patch`) from CLI, reading the JSON request object from `stdin`. |
-| `dotnetlab capture <workspace> <pid> <profile> <seconds>` | Human convenience command: issues a one-shot `observe` grant and captures an EventPipe trace from `<pid>`. |
+| `dotnetlab capture <workspace> <pid> <profile> <seconds>` | Convenience command: issues a one-shot `observe` grant and captures an EventPipe trace from `<pid>`. |
 | `dotnetlab import <workspace> <path> <media-type>` | Imports a local file (such as a `.dll`, `.json`, `.diff`, or `.nettrace`) into the content-addressed workspace store and prints its `Artifact` record. |
 | `dotnetlab backup <workspace>` | Creates a verified consistent SQLite backup of the workspace catalog. |
 | `dotnetlab checkpoint <workspace> [--truncate]` | Checkpoints the SQLite WAL journal (optionally truncating the WAL file). |
 
 ---
 
-## Human-Issued Security Grants
+## Scoped Security Grants and Optional Manual Approval
 
-`Tedd.DotNetLab` enforces a strict **human-in-the-loop capability boundary**: MCP tools can discover processes, inspect stored records, and prepare immutable experiment/confirmation/attachment plans, **but an AI agent cannot self-authorize attaching to a live process, executing code, mutating IL, launching builds, or deleting/exporting evidence.**
+DotNetLab requires scoped grants for attachment, execution, IL replacement, build launches, and evidence administration. The skill issues grants through the local CLI within the user's authorized task, using verified target or plan identities and bounded expiry and operation counts. To require manual approval, instruct the agent to present each grant command and wait for approval before issuing it, or run the command yourself. The CLI authenticates the local account, not whether a human typed the command; manual approval is a workflow policy. MCP exposes no grant-issuance action.
 
 ### Issuing Grants While Connected
 

@@ -1,6 +1,6 @@
 # MCP Core Loop, Connection & Profiling
 
-Reference for connecting to `Tedd.DotNetLab`, obtaining human CLI grants, profiling bottlenecks via EventPipe, managing the hypothesis notebook, and running controlled 2-arm or $2\times 2$ factorial experiments.
+Reference for connecting to DotNetLab, issuing scoped CLI grants, profiling bottlenecks via EventPipe, managing the hypothesis notebook, and running controlled 2-arm or $2\times 2$ factorial experiments.
 
 ## 1. Launch, Runtime Matrix & Client Setup
 
@@ -15,9 +15,9 @@ Reference for connecting to `Tedd.DotNetLab`, obtaining human CLI grants, profil
   - **Targets & Normal Builds:** Managed target execution, EventPipe capture, fresh normal-build confirmation, and native `ICorProfilerInfo12` inspection/probes/ReJIT accept **any CoreCLR `.NET 6.0` or later** runtime (`.NET 6`, `.NET 8`, `.NET 9`, `.NET 10`, `.NET 11` RCs/previews, `.NET 12+`) on Windows/Linux x64. Live profiler attach (`attach_profiler`) is supported on Windows x64 CoreCLR `.NET 6.0+`. Raw `corerun.exe` (`12.0.0-dev`) is supported on Windows x64 `quiet-validation` with leased CoreLib/CoreCLR/JIT SHA-256 hashes at epoch `"0"`.
   - **Client Installer:** `dotnet <Host.dll> install [all|codex|claude|cursor|antigravity] --workspace <abs-path>` configures Codex, Claude Code, Cursor, and Google Antigravity (`agy`) without clobbering unrelated MCP servers.
 
-## 2. Human-Issued CLI Grants
+## 2. Scoped CLI Grants
 
-Discovery never grants permission to capture traces, run scenarios, or inspect live JIT code. **Only the human operator runs CLI grant commands:**
+Issue CLI grants directly for operations within the user's authorized task. Use short expiries and sufficient operation budgets for the planned work and restoration. Manual approval is optional: if the user requests it, present the exact command and wait for approval before issuing the grant, or let the user run it. Discovery alone does not authorize unrelated targets or actions. Grant commands are:
 
 ```text
 <host> grant <workspace> <pid> observe <seconds> <max-ops>
@@ -31,10 +31,10 @@ Discovery never grants permission to capture traces, run scenarios, or inspect l
 - **Live Grant Forwarding:** While a `connect` shared controller is running, CLI commands against the same workspace (`grant*`, `import`, `call`, …) are **forwarded to the live controller** over the current-user-only pipe—no disconnect is needed. Only a dedicated `serve` controller (or a stale lock) still requires stopping the controller first.
 - **Grant Request Sequence:**
   1. Ensure no jobs are running against the target you want granted.
-  2. Provide the exact CLI command with verified absolute workspace path, live `<pid>` (or `<plan-id>` / scratch dir / build id), permission scope, expiry seconds, and operation count.
-  3. After the human supplies the returned `grant_id`, re-verify `target_id` and `expected_target_epoch` via `lab.discover`.
+  2. Run the exact CLI command with verified absolute workspace path, live `<pid>` (or `<plan-id>` / scratch dir / build id), permission scope, expiry seconds, and operation count. Wait for approval first only when the user requires manual approval.
+  3. Retain the returned `grant_id` and re-verify `target_id` and `expected_target_epoch` via `lab.discover`.
 - **Distinct Scopes:** `observe` (standalone EventPipe or diagnostic run window) != `execute_registered_scenario` (quiet harness execution). Runs using diagnostic profiles (`cpu-diagnostic`, `allocation-diagnostic`, etc.) require **both** `grant_id` (`execute_registered_scenario`) and `observation_grant_id` (`observe`).
-- **Scratch Grants (`grant-scratch`):** Authorize any process whose executable lives **strictly inside** `<scratch-dir>` (no reparse points) for the grant window—rebuilds and new PIDs stay covered, so the iterate → rebuild → rerun loop needs one grant. Omitting the permission issues an `observe` + `execute_registered_scenario` pair. Ask for a narrow, disposable directory and a short expiry. See §7.
+- **Scratch Grants (`grant-scratch`):** Authorize any process whose executable lives **strictly inside** `<scratch-dir>` (no reparse points) for the grant window—rebuilds and new PIDs stay covered, so the iterate → rebuild → rerun loop needs one grant. Omitting the permission issues an `observe` + `execute_registered_scenario` pair. Use a narrow, owned disposable directory and a short expiry. See §7.
 - **Build Grants (`grant-build`):** Authorize `capture_jit_disasm` to launch a registered normal build (`build_id`) as an owned process.
 
 ## 3. Discovery & Artifact Inspection (`lab.discover`, `lab.inspect`, `lab.query`)
@@ -186,7 +186,7 @@ Use a disposable scratch project to falsify a micro-mechanism quickly (e.g., "do
    <host> scaffold <abs-scratch-dir> [--scenario <id>] [--force]
    ```
    Output JSON includes `project_path`, `program_path`, `expected_output_dll_path`, and `build_command`. The generated `ScratchBench.csproj` ignores repository `Directory.Build.props` / central package management and enables `AllowUnsafeBlocks` + Tiered PGO. Edit `ExecuteBaseline` / `ExecuteCandidate` in `Program.cs` and keep `Validate()` as an independent oracle.
-2. **Human grants the directory once:** `<host> grant-scratch <workspace> <abs-scratch-dir> <seconds> <max-ops>` → returns an `observe` + `execute_registered_scenario` grant pair. Rebuilds and new PIDs under that directory remain authorized until expiry/exhaustion.
+2. **Issue a directory grant:** `<host> grant-scratch <workspace> <abs-scratch-dir> <seconds> <max-ops>` → returns an `observe` + `execute_registered_scenario` grant pair. Rebuilds and new PIDs under that directory remain authorized until expiry/exhaustion.
 3. **Build & start the live target:** run the `build_command`, then start `dotnet <expected_output_dll_path> <abs-workspace>` as a background process (it prints `pid`/`target_id` and stays alive until stdin closes). Re-run `lab.discover` `targets`/`scenarios`, then `create_plan` + `lab.run` `start` with the scratch `grant_id` as usual.
 4. **Iterate:** stop the process, edit, rebuild, restart → new PID/target, **same grant**. Freeze a new plan whenever code changes (the variant code is part of the treatment).
 5. **Clean up** the scratch directory after the target exits; keep catalog evidence.

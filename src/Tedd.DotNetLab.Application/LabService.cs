@@ -97,7 +97,7 @@ public sealed partial class LabService : IAsyncDisposable
         Upsert(targetId,"target",target with { Identity=handshake.Target,Capabilities=capabilities });
         return handshake;
     }
-    // This entry point is for a human-invoked local CLI. It is not an MCP tool.
+    // This entry point is for the local CLI. It is not an MCP tool.
     public Grant IssueGrant(string targetId,Permission permission,int seconds,int maximumOperations)
     {
         if(permission is not (Permission.Observe or Permission.ExecuteRegisteredScenario or Permission.InspectLiveCode))

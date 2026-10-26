@@ -29,7 +29,7 @@ For modern C# codebases using **generic methods, `Span<T>`, `readonly ref struct
 
 ### Live Process Native Disassembly (`inspect_live_code`)
 1. **Qualification:** Target must have the native profiler active (`lab.discover` `profiler`), and the target method must be a **compiled non-generic method in a non-dynamic, non-collectible module** (verify module MVID, MethodDef token, and `module_load_id`). If the hot method is inlined into its caller, inspect the **optimized caller**!
-2. **Grant & Inspect:** With shared `connect` clients still connected, the human issues (a dedicated `serve` process must first release the workspace):
+2. **Grant & Inspect:** With shared `connect` clients still connected, issue the scoped grants (a dedicated `serve` process must first release the workspace):
    ```text
    <host> grant <workspace> <pid> inspect_live_code <seconds> <max-ops>
    ```
@@ -45,7 +45,7 @@ For modern C# codebases using **generic methods, `Span<T>`, `readonly ref struct
 
 Only attach the profiler when live disassembly or ReJIT is explicitly needed and the target lacks startup profiler registration:
 1. `lab.experiment` `{"request":{"action":"prepare_profiler_attachment","target_id":"tgt_...","expected_target_epoch":"0"}}` -> freezes target identity, runtime hash, and verified `Tedd.DotNetLab.Profiler.dll` hash into `plan_id`.
-2. With shared `connect` clients still connected, the human runs (dedicated `serve` requires releasing the workspace):
+2. With shared `connect` clients still connected, issue the scoped grant (dedicated `serve` requires releasing the workspace):
    `<host> grant-profiler-attach <workspace> <attachment-plan-id> <seconds> 1`
 3. `lab.run` `{"request":{"action":"attach_profiler","plan_id":"att_...","grant_id":"grt_att","idempotency_key":"att-1"}}`.
 4. If attachment outcome is uncertain (timeout/transport drop), call `reconcile_profiler_attachment` (`operation_id`, `grant_id`)—**never** blindly issue a second load.
@@ -61,8 +61,8 @@ Live CIL mutation is strictly for **rapid mechanism falsification on disposable 
 
 | Stage | Calls & Grants | Key Rules |
 | --- | --- | --- |
-| **1. Method Probe** | `lab.patch` `prepare_probe` (`inspection_id`, `base_il_hash`, `timing`, `threads`, `maximum_nesting`, `track_exceptions`) -> `register_cil_candidate` -> human `grant-cil` -> `apply` -> run with `profile="targeted-probes"` -> `flush_probes` -> `restore_original`. | Counts/inclusive wall times cover the delimited probe window **including warm-up**. Always flush and restore before any quiet timing. |
-| **2. Register Candidate** | Import a rebuilt PE and use `register_compiled_candidate`, or import a `CilInput` JSON artifact (`schema_version`, base64 `body`, `transformation`) and use `register_cil_candidate`; then human `<host> grant-cil <workspace> <cil-candidate-id> <seconds> <max-ops>`. | Bind `inspection_id` and `base_il_hash`; run `lab.patch` `preflight` before applying. |
+| **1. Method Probe** | `lab.patch` `prepare_probe` (`inspection_id`, `base_il_hash`, `timing`, `threads`, `maximum_nesting`, `track_exceptions`) -> `register_cil_candidate` -> `grant-cil` -> `apply` -> run with `profile="targeted-probes"` -> `flush_probes` -> `restore_original`. | Counts/inclusive wall times cover the delimited probe window **including warm-up**. Always flush and restore before any quiet timing. |
+| **2. Register Candidate** | Import a rebuilt PE and use `register_compiled_candidate`, or import a `CilInput` JSON artifact (`schema_version`, base64 `body`, `transformation`) and use `register_cil_candidate`; then issue `<host> grant-cil <workspace> <cil-candidate-id> <seconds> <max-ops>`. | Bind `inspection_id` and `base_il_hash`; run `lab.patch` `preflight` before applying. |
 | **3. A/A Compilation Control** | `lab.patch` `prepare_original_control` (`inspection_id`) -> `lab.experiment` `create_compilation_control` -> `lab.patch` `run_compilation_control` (`plan_id`, `mutation_grant_id`, `execution_grant_id`, `inspection_grant_id`, `idempotency_key`). | Mandatory before ReJIT A/B timing: proves ReJITing the original IL body reproduces baseline behavior/cost under identical warmup and callers. |
 | **4. Matched Native Trial** | `lab.experiment` `create_native_trial` (`candidate_id`, `compilation_control_id`, `blocks`, `seed`) -> `lab.patch` `run_native_trial` (`plan_id`, `original_grant_id`, `candidate_grant_id`, `execution_grant_id`, `inspection_grant_id`, `idempotency_key`) -> verify via `lab.query` `verify_native_trial`. | Runs randomized matched blocks of original-ReJIT vs candidate-ReJIT and restores the original body upon completion. |
 | **5. Multi-Session Series** | Freeze `create_native_series` (`trial_plan_ids` across distinct disposable process sessions) -> run each reserved trial -> `lab.run` `register_native_series_results` (**all** slots, no cherry-picking) -> `compare_native_series` -> `lab.query` `native_series_comparison`. | Even after `restore_original`, PGO/inlining history persists; confirm winning mechanisms via [fresh normal builds](advanced-lab.md). |
@@ -70,4 +70,4 @@ Live CIL mutation is strictly for **rapid mechanism falsification on disposable 
 ## 5. Interrupted Mutation & Taint Recovery
 
 - Retain every `transaction_id`, `operation_id`, and `idempotency_key`. If a timeout or disconnect occurs during `apply`, `restore_original`, or `run_native_trial`, **inspect durable operation/record state first**—never assume rollback occurred or run timing on a potentially mutated target.
-- Only call `lab.patch` `recover_interrupted` (`transaction_id`, `expected_target_epoch`, `grant_id`, `execution_grant_id`, `idempotency_key`) when qualified recovery evidence and human grants match; otherwise preserve workspace evidence and terminate/replace the disposable target process cleanly.
+- Only call `lab.patch` `recover_interrupted` (`transaction_id`, `expected_target_epoch`, `grant_id`, `execution_grant_id`, `idempotency_key`) when qualified recovery evidence and scoped grants match; otherwise preserve workspace evidence and terminate/replace the disposable target process cleanly.
