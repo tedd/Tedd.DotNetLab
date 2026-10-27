@@ -117,7 +117,10 @@ try
         }
         stdIn=input.ToString();
     }
-    if(await SharedController.TryForwardCliAsync(workspace,args,stdIn) is { } forwarded)
+    var forwarded=command=="call"&&args.Length==3
+        ?await SharedController.ForwardCliAsync(workspace,args,stdIn)
+        :await SharedController.TryForwardCliAsync(workspace,args,stdIn);
+    if(forwarded is not null)
     {
         if(forwarded.StandardOutput.Length>0) Console.Out.Write(forwarded.StandardOutput);
         if(forwarded.StandardError.Length>0) Console.Error.Write(forwarded.StandardError);

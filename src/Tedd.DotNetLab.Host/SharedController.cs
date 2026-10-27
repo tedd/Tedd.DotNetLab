@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,10 +27,29 @@ public static class SharedController
     private static NamedPipeClientStream Client(string pipe)=>new(".",pipe,PipeDirection.InOut,
         PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly);
 
-    public static async Task ConnectAsync(string workspace,bool nativeExtension,CancellationToken cancellation=default)
+    [DllImport("kernel32.dll",SetLastError=true)]
+    private static extern nint GetStdHandle(int standardHandle);
+    [DllImport("kernel32.dll",SetLastError=true)]
+    [return:MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetHandleInformation(nint handle,uint mask,uint flags);
+
+    private static void IsolateStandardHandles()
+    {
+        if(!OperatingSystem.IsWindows()) return;
+        // Process.Start redirects the child's standard streams, but Windows also inherits
+        // other inheritable handles. A detached descendant must not retain our pipe ends.
+        foreach(int kind in new[]{-10,-11,-12})
+        {
+            nint handle=GetStdHandle(kind);
+            if(handle==0||handle==-1) continue;
+            if(!SetHandleInformation(handle,1,0))
+                throw new LabException("controller_unavailable","Could not isolate controller standard handles.");
+        }
+    }
+
+    private static async Task<NamedPipeClientStream> ConnectControllerAsync(string workspace,CancellationToken cancellation)
     {
         string name=PipeName(workspace);
-        ConnectionLog.Event("connector_starting",new { pipe=name,native_extension=nativeExtension });
         using var startup=CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         startup.CancelAfter(TimeSpan.FromSeconds(15));
         NamedPipeClientStream pipe;
@@ -47,6 +67,7 @@ public static class SharedController
                 start.ArgumentList.Add(typeof(SharedController).Assembly.Location);
                 start.ArgumentList.Add("--shared-bootstrap"); start.ArgumentList.Add(Path.GetFullPath(workspace));
                 start.RedirectStandardInput=true; start.RedirectStandardOutput=true; start.RedirectStandardError=true;
+                IsolateStandardHandles();
                 using var controller=Process.Start(start)??throw new LabException("controller_unavailable","Shared controller could not start.");
                 ConnectionLog.Event("bootstrap_started",new { bootstrap_process_id=controller.Id });
                 controller.StandardInput.Close();
@@ -70,7 +91,13 @@ public static class SharedController
             }
             catch { pipe.Dispose(); throw; }
         }
-        using(pipe)
+        return pipe;
+    }
+
+    public static async Task ConnectAsync(string workspace,bool nativeExtension,CancellationToken cancellation=default)
+    {
+        ConnectionLog.Event("connector_starting",new { pipe=PipeName(workspace),native_extension=nativeExtension });
+        using var pipe=await ConnectControllerAsync(workspace,cancellation);
         using(var connection=CancellationTokenSource.CreateLinkedTokenSource(cancellation))
         {
             ConnectionLog.Event("connector_connected",new { controller_process_id=ConnectionLog.Peer(pipe.SafePipeHandle,true) });
@@ -119,6 +146,7 @@ public static class SharedController
         start.ArgumentList.Add(typeof(SharedController).Assembly.Location);
         start.ArgumentList.Add("--shared-controller"); start.ArgumentList.Add(Path.GetFullPath(workspace));
         start.RedirectStandardInput=true; start.RedirectStandardOutput=true; start.RedirectStandardError=true;
+        IsolateStandardHandles();
         using var process=Process.Start(start)??throw new LabException("controller_unavailable","Shared controller could not start.");
         ConnectionLog.Event("controller_spawned",new { controller_process_id=process.Id });
         process.StandardInput.Close();
@@ -229,6 +257,13 @@ public static class SharedController
         }
     }
 
+    internal static async Task<CliForwardReply> ForwardCliAsync(string workspace,string[] args,string? standardInput,CancellationToken cancellation=default)
+    {
+        // Tool calls may accept background work. Its service must outlive this CLI process.
+        using var pipe=await ConnectControllerAsync(workspace,cancellation);
+        return await SendCliAsync(pipe,args,standardInput,cancellation);
+    }
+
     internal static async Task<CliForwardReply?> TryForwardCliAsync(string workspace,string[] args,string? standardInput,CancellationToken cancellation=default)
     {
         string fullWorkspace=Path.GetFullPath(workspace);
@@ -243,6 +278,11 @@ public static class SharedController
         {
             return null;
         }
+        return await SendCliAsync(pipe,args,standardInput,cancellation);
+    }
+
+    private static async Task<CliForwardReply> SendCliAsync(NamedPipeClientStream pipe,string[] args,string? standardInput,CancellationToken cancellation)
+    {
         await pipe.WriteAsync(new byte[]{2},cancellation);
         await Frames.WriteAsync(pipe,new CliForwardRequest(Wire.Version,args,standardInput),cancellation);
         return await Frames.ReadAsync<CliForwardReply>(pipe,cancellation);

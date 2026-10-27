@@ -46,6 +46,8 @@ Copies the bundled `dotnetlab` agent skill and registers the `dotnetlab` MCP ser
 | `dotnetlab backup <workspace>` | Creates a verified consistent SQLite backup of the workspace catalog. |
 | `dotnetlab checkpoint <workspace> [--truncate]` | Checkpoints the SQLite WAL journal (optionally truncating the WAL file). |
 
+`dotnetlab call` starts or reuses the workspace's shared controller over its current-user-only named pipe. Accepted background operations continue after the CLI exits; poll `status` or request `cancel` with the returned operation ID. The controller exits after five seconds with no clients or active operations, once uncertain target measurements are reconciled.
+
 ---
 
 ## Scoped Security Grants and Optional Manual Approval
@@ -54,7 +56,7 @@ DotNetLab requires scoped grants for attachment, execution, IL replacement, buil
 
 ### Issuing Grants While Connected
 
-CLI commands against a workspace with a running shared `connect` controller forward over its current-user-only named pipe. Issue `grant*` commands while MCP clients remain connected; the controller serializes catalog writes. The agent revalidates `(PID, start_time_utc_ticks, epoch)` before using the grant. A dedicated `serve` process does not expose this forwarding endpoint and must release its workspace before another CLI process opens it.
+CLI commands against a workspace with a running shared controller forward over its current-user-only named pipe. Issue `grant*` commands while MCP clients remain connected; the controller serializes catalog writes. The agent revalidates `(PID, start_time_utc_ticks, epoch)` before using the grant. A dedicated `serve` process does not expose this forwarding endpoint and must release its workspace before another CLI process opens it.
 
 ### Grant Commands
 
