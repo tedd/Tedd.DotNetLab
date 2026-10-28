@@ -2,6 +2,8 @@
 
 **A scientific .NET profiling, benchmarking, and performance-engineering laboratory for AI coding agents (Codex, Claude Code, Cursor, & Google Antigravity).**
 
+[Website](https://tedd.github.io/Tedd.DotNetLab/) · [Installation](#installation) · [CLI & MCP reference](docs/cli-and-mcp-reference.md)
+
 When you ask an AI agent to optimize or debug a .NET application on its own, it typically guesses at bottlenecks, writes throwaway `Stopwatch` loops skewed by JIT tiering and GC noise, and declares victory off a single lucky run.
 
 **`Tedd.DotNetLab`** gives AI agents a real, measurement-grade .NET performance laboratory via **Model Context Protocol (MCP)** and a companion **Agent Skill** (`dotnetlab`):
