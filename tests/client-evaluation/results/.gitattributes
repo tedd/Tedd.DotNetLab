@@ -1,0 +1,2 @@
+*.cs.txt -text -whitespace
+*.patch -text -whitespace

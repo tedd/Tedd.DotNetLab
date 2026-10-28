@@ -1,0 +1,21 @@
+--- baseline/Candidate.cs
++++ candidate/Candidate.cs
+@@ -1,7 +1,17 @@
+ // Only this file is editable by the evaluated client. Preserve every public signature.
+ public static class Candidate
+ {
+-    public static long SumSquares(int[] values) => Baseline.SumSquares(values);
++    public static long SumSquares(int[] values)
++    {
++        long sum = 0;
++
++        foreach (int value in values)
++        {
++            sum = unchecked(sum + (long)value * value);
++        }
++
++        return sum;
++    }
+     public static long Csv(string text) => Baseline.Csv(text);
+     public static int Membership(string[] queries, string[] allowed) => Baseline.Membership(queries, allowed);
+     public static int CountByte(byte[] bytes, byte needle) => Baseline.CountByte(bytes, needle);
