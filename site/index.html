@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7faf9" />
-    <meta name="description" content="A .NET performance laboratory for AI coding agents. Profile live processes, run controlled experiments, inspect JIT assembly, and confirm optimizations in fresh processes." />
-    <meta property="og:title" content="Tedd.DotNetLab — .NET performance engineering for AI agents" />
-    <meta property="og:description" content="EventPipe profiling, randomized experiments, live JIT inspection, and fresh-process confirmation through MCP and an agent skill." />
+    <meta name="description" content="Make your .NET application faster with your AI coding agent. DotNetLab combines profiling, optimization guidance, and the scientific method to find bottlenecks, improve code, and verify gains." />
+    <meta property="og:title" content="Tedd.DotNetLab — Make your .NET application faster" />
+    <meta property="og:description" content="Give your AI coding agent a .NET performance laboratory: find bottlenecks, implement optimizations, and verify the gains with controlled experiments." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tedd.no/Tedd.DotNetLab/" />
-    <title>Tedd.DotNetLab — .NET performance engineering for AI agents</title>
+    <title>Tedd.DotNetLab — Make your .NET application faster</title>
     <link rel="canonical" href="https://tedd.no/Tedd.DotNetLab/" />
     <link rel="icon" href="assets/dotnetlab-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +27,8 @@
       </a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation" hidden>Menu</button>
       <nav id="navigation" aria-label="Primary navigation">
-        <a href="#workflow">Workflow</a>
+        <a href="#results">Results</a>
+        <a href="#workflow">Scientific method</a>
         <a href="#capabilities">Capabilities</a>
         <a href="https://github.com/tedd/Tedd.DotNetLab#readme">Documentation</a>
         <a class="nav-cta" href="#install">Get started <span aria-hidden="true">↗</span></a>
@@ -38,106 +39,139 @@
       <section class="hero grid-background" id="top">
         <div class="hero-copy">
           <p class="eyebrow"><span></span> .NET performance laboratory for AI agents</p>
-          <h1>Find the bottleneck.<br />Prove the <em>improvement.</em></h1>
-          <p class="lede">Give your coding agent the tools to measure .NET performance. Capture live traces, compare code with controlled experiments, and confirm the result in fresh processes. Connected through <strong>MCP and an agent skill.</strong></p>
+          <h1>Make your .NET<br />application <em>faster.</em></h1>
+          <p class="lede">Give your AI coding agent a performance goal. DotNetLab equips it to <strong>find bottlenecks, implement optimizations, and verify the gains</strong> with profiling tools, C# optimization guidance, and the scientific method.</p>
+          <p class="hero-detail">Start with your existing application. Profile running .NET processes without code changes.</p>
           <div class="actions">
-            <a class="button primary" href="#install">Install DotNetLab <span aria-hidden="true">↗</span></a>
-            <a class="button secondary" href="https://github.com/tedd/Tedd.DotNetLab">Explore the source <span aria-hidden="true">↗</span></a>
+            <a class="button primary" href="#install">Get started <span aria-hidden="true">↗</span></a>
+            <a class="button secondary" href="#results">See a measured result <span aria-hidden="true">↓</span></a>
           </div>
           <p class="hero-note">For Codex, Claude Code, Cursor &amp; Google Antigravity</p>
         </div>
 
-        <figure class="lab-window" aria-label="Performance investigation workflow: observe, experiment, and confirm">
-          <div class="window-bar"><span></span><span></span><span></span><b>DotNetLab / investigation protocol</b><i>MCP</i></div>
+        <figure class="lab-window" aria-label="Starting prompt and agent optimization workflow">
+          <div class="window-bar"><span></span><span></span><span></span><b>Your agent + DotNetLab</b><i>MCP + Skill</i></div>
           <div class="lab-content">
-            <div class="lab-heading"><div><p class="micro">EVIDENCE BEFORE OPTIMIZATION</p><h2>One question. A measured answer.</h2></div><span class="status">.NET / x64</span></div>
-            <div class="trace-panel">
-              <div class="trace-label"><span>OBSERVE THE RUNTIME</span><span>CPU · allocation · GC</span></div>
-              <svg class="trace" viewBox="0 0 600 140" role="img" aria-label="Illustrative runtime activity trace">
-                <defs><linearGradient id="trace-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#087f78" stop-opacity=".23"/><stop offset="1" stop-color="#087f78" stop-opacity="0"/></linearGradient></defs>
-                <path class="trace-grid" d="M0 28H600M0 70H600M0 112H600M60 0V140M180 0V140M300 0V140M420 0V140M540 0V140" />
-                <path fill="url(#trace-fill)" d="M0 112 24 110 36 98 48 108 72 105 84 65 96 94 108 88 120 108 144 106 156 75 168 100 180 103 192 30 204 63 216 16 228 84 240 55 252 100 276 104 288 91 300 105 324 100 336 72 348 97 372 99 384 44 396 75 408 96 432 100 444 83 456 99 480 104 492 65 504 96 528 101 540 88 552 106 576 103 600 110V140H0Z" />
-                <path class="trace-line" d="M0 112 24 110 36 98 48 108 72 105 84 65 96 94 108 88 120 108 144 106 156 75 168 100 180 103 192 30 204 63 216 16 228 84 240 55 252 100 276 104 288 91 300 105 324 100 336 72 348 97 372 99 384 44 396 75 408 96 432 100 444 83 456 99 480 104 492 65 504 96 528 101 540 88 552 106 576 103 600 110" />
-                <path class="gc-marker" d="M192 7V132M216 7V132" /><text x="230" y="24">GC overlap?</text>
-              </svg>
-              <div class="trace-caption"><span>EventPipe diagnostic capture</span><span>Illustrative trace</span></div>
+            <div class="lab-heading"><div><p class="micro">START WITH A GOAL</p><h2>You ask. Your agent investigates.</h2></div></div>
+            <div class="hero-prompt">
+              <pre id="prompt-start">Use DotNetLab to improve this application's performance. Find the largest bottlenecks, implement candidate optimizations, and retain changes supported by measurements and correctness checks.</pre>
+              <button class="copy-prompt" type="button" data-copy-target="prompt-start">Copy prompt</button>
             </div>
-            <ol class="protocol">
-              <li><span class="step-number">01</span><div><strong>Observe</strong><span>Locate CPU and allocation hotspots</span></div><code>lab.run</code></li>
-              <li><span class="step-number">02</span><div><strong>Experiment</strong><span>Randomize blocks. Validate outputs.</span></div><code>lab.compare</code></li>
-              <li><span class="step-number">03</span><div><strong>Confirm</strong><span>Retest in clean, profiler-free processes</span></div><code>lab.run</code></li>
+            <ol class="protocol" aria-label="What your agent does">
+              <li><span class="step-number">01</span><div><strong>Find the expensive work</strong><span>Profile CPU, allocations, and GC in your workload.</span></div></li>
+              <li><span class="step-number">02</span><div><strong>Improve the code</strong><span>Test focused changes guided by the bottleneck.</span></div></li>
+              <li><span class="step-number">03</span><div><strong>Verify the improvement</strong><span>Check correctness and retest in fresh builds.</span></div></li>
             </ol>
-            <div class="lab-footer"><span class="status-dot"></span> Immutable plans <span class="divider">/</span> Retained evidence <span class="divider">/</span> Scoped grants</div>
           </div>
-          <figcaption>From a live process to a reproducible performance decision.</figcaption>
+          <figcaption>Your coding agent writes the changes. DotNetLab supplies the tools and experimental guidance.</figcaption>
         </figure>
       </section>
 
       <div class="proof-strip" aria-label="Platform and integration requirements">
         <p><strong>Windows &amp; Linux</strong><span>x64 platforms</span></p>
-        <p><strong>.NET 6+</strong><span>CoreCLR target workloads</span></p>
-        <p><strong>.NET 10+</strong><span>Controller runtime</span></p>
-        <p><strong>MCP + Skill</strong><span>Agent tools and investigation guidance</span></p>
+        <p><strong>.NET 6+ applications</strong><span>CoreCLR targets · .NET 10+ to run DotNetLab</span></p>
+        <p><strong>Your existing code</strong><span>No code changes for initial profiling</span></p>
+        <p><strong>Open source</strong><span>Apache-2.0 · MCP server + agent skill</span></p>
       </div>
 
-      <section class="section workflow" id="workflow">
-        <div class="section-intro"><div><p class="eyebrow">THE INVESTIGATION LOOP</p><h2>Make performance<br />a testable question.</h2></div><p>Carry one hypothesis from diagnostic evidence through a controlled comparison to a fresh-build decision. Preserve the inputs, plans, and artifacts along the way.</p></div>
-        <div class="workflow-grid">
-          <article><span class="large-number">01 /</span><h3>Find the mechanism.</h3><p>Discover a running process. Capture CPU samples, allocation stacks, GC pauses, and runtime counters. Identify the methods and windows that explain the cost.</p><a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/cli-and-mcp-reference.md">Explore the MCP tools <span aria-hidden="true">↗</span></a></article>
-          <article><span class="large-number">02 /</span><h3>Control the experiment.</h3><p>Declare the primary metric, allocation guardrails, warmup, and correctness checks before running a seeded, randomized block comparison.</p><a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/statistical-contract.md">Read the statistical contract <span aria-hidden="true">↗</span></a></article>
-          <article><span class="large-number">03 /</span><h3>Verify the outcome.</h3><p>Build the candidate and baseline, then compare them in fresh OS processes with diagnostics disabled. Record the adoption decision against retained evidence.</p><a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/evidence-management.md">Follow the evidence <span aria-hidden="true">↗</span></a></article>
+      <section class="section results-section" id="results">
+        <div class="result-story">
+          <p class="eyebrow">MEASURED WITH DOTNETLAB · WILDCARDMATCH</p>
+          <h2>One repeated scan.<br /><em>66.4% less time.</em></h2>
+          <p class="result-scope">Time per matching call on dense inputs with a 16,384-character prefix in Tedd.WildcardMatch.</p>
+          <p>The matcher repeatedly checked an already-scanned prefix for newlines. Tracking how far it had checked let each retry scan only the new interval.</p>
+          <p>DotNetLab compared the source change with the original in fresh processes. The smaller dense-input scenario improved by 27.4%; ordinary inputs stayed within the declared ±5% equivalence margin.</p>
+          <a class="text-link" href="evidence/wildcard-candidate.patch">Inspect the measured code change <span aria-hidden="true">↗</span></a>
         </div>
+        <figure class="result-chart">
+          <p class="micro">DENSE-16384 · TIME PER MATCHING CALL</p>
+          <div class="result-bar-label"><span>Original</span><strong>8.260 ms</strong></div>
+          <div class="result-bar baseline" aria-hidden="true"></div>
+          <div class="result-bar-label"><span>Optimized</span><strong>2.772 ms</strong></div>
+          <div class="result-bar candidate" aria-hidden="true"></div>
+          <p class="result-verification">10 paired fresh-process blocks per scenario.<br />Correctness checks passed in all 80 sessions across four scenarios.</p>
+          <figcaption>Windows x64 · .NET 10.0.12 · Ryzen 9 5950X<br />Geometric mean time per call for this synthetic matching workload.</figcaption>
+        </figure>
+        <details class="measurement-details">
+          <summary>All four scenarios, measurement method, and source data</summary>
+          <div class="table-scroll" role="region" aria-label="WildcardMatch measurement results" tabindex="0">
+            <table>
+              <caption>Fresh-process confirmation · 15 October 2026</caption>
+              <thead><tr><th scope="col">Scenario</th><th scope="col">Original ns/call</th><th scope="col">Optimized ns/call</th><th scope="col">Result</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Dense · 4,096-character prefix</th><td>654,963.0</td><td>475,514.9</td><td>27.4% less time</td></tr>
+                <tr><th scope="row">Dense · 16,384-character prefix</th><td>8,259,676.3</td><td>2,771,530.9</td><td>66.4% less time</td></tr>
+                <tr><th scope="row">Ordinary</th><td>84.9</td><td>84.7</td><td>Equivalent within ±5%</td></tr>
+                <tr><th scope="row">Newline</th><td>155,255.8</td><td>127,016.4</td><td>18.2% less time</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Each scenario used ten randomized paired blocks, with a separate baseline and candidate process per block, two warm-up batches, and no excluded or replacement runs. Timings are geometric means of batch means. Four comparisons shared a 5% error budget; the dense-16384 candidate/baseline ratio was 0.3355, with a 98.75% interval of 0.2871–0.3922.</p>
+          <p>The study covered one pattern and four synthetic input distributions. Host load, CPU affinity, frequency, and thermal state were uncontrolled. The results describe these matching calls; application throughput depends on its workload.</p>
+          <a class="text-link" href="evidence/wildcard-validation.json">Read the measurement data and protocol <span aria-hidden="true">↗</span></a>
+        </details>
+      </section>
+
+      <section class="section workflow" id="workflow">
+        <div class="section-intro"><div><p class="eyebrow">THE SCIENTIFIC METHOD</p><h2>Observe. Hypothesize.<br />Experiment. Verify.</h2></div><p>Your agent follows an experimental loop: measure a real bottleneck, explain its cause, test a focused change, and check whether the improvement survives independent confirmation.</p></div>
+        <div class="workflow-grid">
+          <article><span class="large-number">01 / OBSERVE</span><h3>Find what costs time.</h3><p>Profile your workload to locate CPU hotspots, allocations, and GC pauses. Your agent forms a testable hypothesis about the expensive work and the change that could reduce it.</p></article>
+          <article><span class="large-number">02 / EXPERIMENT</span><h3>Implement and test a change.</h3><p>Your agent edits the code, checks its outputs, and compares it with the baseline. Metrics and acceptance criteria are fixed before timing; randomized trials help separate gains from noise.</p></article>
+          <article><span class="large-number">03 / VERIFY</span><h3>Keep the supported gains.</h3><p>Retest baseline and candidate builds in fresh, profiler-free processes. Retain changes that pass performance and correctness checks, revert unsupported candidates, then profile again.</p></article>
+        </div>
+        <a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/statistical-contract.md">Explore the statistical methods <span aria-hidden="true">↗</span></a>
       </section>
 
       <section class="section capabilities" id="capabilities">
-        <div class="section-intro"><div><p class="eyebrow">TOOLS FOR THE WHOLE QUESTION</p><h2>From call stacks<br />to machine code.</h2></div><p>Profile existing applications without code changes. Add the cooperative harness when you need controlled scenarios, latency studies, and repeatable validation.</p></div>
+        <div class="section-intro"><div><p class="eyebrow">PROFILING TOOLS + OPTIMIZATION EXPERTISE</p><h2>From a slow path<br />to better code.</h2></div><p>The MCP server gives your agent access to the runtime. The companion skill guides algorithm, memory, JIT, SIMD, and concurrency optimizations based on the bottleneck it measures.</p></div>
         <div class="feature-grid">
-          <article class="feature-card featured"><span class="feature-symbol" aria-hidden="true">↯</span><p class="card-kicker">LIVE DIAGNOSTICS</p><h3>CPU, allocation &amp; GC</h3><p>Inclusive and exclusive stack hotspots, per-generation GC pauses, runtime counters, and slow-window correlation through EventPipe.</p></article>
-          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">A/B</span><p class="card-kicker">CONTROLLED COMPARISONS</p><h3>Experiments with guardrails</h3><p>A/B, multi-variant, and 2 × 2 factorial designs with paired confidence intervals, multiplicity correction, and equivalence testing.</p></article>
-          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">p99</span><p class="card-kicker">TAIL LATENCY</p><h3>Look beyond the average.</h3><p>Capture per-operation latencies and compare tail quantiles using cluster bootstrap inference across independent blocks.</p></article>
-          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">&lt;/&gt;</span><p class="card-kicker">NATIVE INSPECTION</p><h3>Inspect what the JIT emitted.</h3><p>Read live x64 assembly and instruction diffs. Prototype bounded CIL replacements with the optional native CoreCLR profiler and ReJIT tools.</p></article>
-          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">#</span><p class="card-kicker">DURABLE EVIDENCE</p><h3>Keep the reasoning reproducible.</h3><p>A local SQLite catalog links hypotheses, immutable plans, baselines, and decisions to content-addressed SHA-256 artifacts.</p></article>
-          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">↗</span><p class="card-kicker">FRESH-PROCESS CONFIRMATION</p><h3>Measure the normal build.</h3><p>Confirm source candidates in new, diagnostics-disabled processes, separately from exploratory profiling and live instrumentation.</p></article>
+          <article class="feature-card featured"><span class="feature-symbol" aria-hidden="true">↯</span><p class="card-kicker">CPU &amp; ALGORITHMS</p><h3>Eliminate expensive work.</h3><p>Locate hot paths with live CPU profiles. Guide your agent toward better algorithms, fewer repeated scans, faster lookups, and work it can remove entirely.</p></article>
+          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">GC</span><p class="card-kicker">MEMORY &amp; ALLOCATIONS</p><h3>Reduce allocation pressure.</h3><p>Trace allocation stacks and GC pauses. Test spans, buffer reuse, and data-layout changes while checking their effect on both speed and allocated bytes.</p></article>
+          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">&lt;/&gt;</span><p class="card-kicker">JIT &amp; SIMD</p><h3>See what the CPU executes.</h3><p>Inspect generated x64 assembly to check inlining, bounds checks, and vectorization. Compare the machine code behind a proposed C# optimization.</p></article>
+          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">↻</span><p class="card-kicker">LIVE REJIT</p><h3>Test changes in a running process.</h3><p>With the optional native profiler, replace supported method bodies while retaining application state. Validate the candidate and restore the original between experiments.</p></article>
+          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">p99</span><p class="card-kicker">LATENCY &amp; CONCURRENCY</p><h3>Investigate the slow requests.</h3><p>Measure per-operation latency and compare p95 and p99. Use contention and runtime evidence to guide experiments with synchronization, batching, and concurrency.</p></article>
+          <article class="feature-card"><span class="feature-symbol" aria-hidden="true">A/B</span><p class="card-kicker">REPEATABLE EVIDENCE</p><h3>Know which changes hold up.</h3><p>Compare candidates with confidence intervals and correctness checks. Confirm gains in normal builds, with plans, results, and decisions retained across agent sessions.</p></article>
         </div>
+        <p class="section-note">Initial profiling needs no application code changes. For controlled comparisons, your agent integrates the cooperative harness with repeatable inputs and correctness checks. <a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/harness-integration.md">Harness guide ↗</a></p>
         <p class="section-note">Native workflows require the optional profiler. Live profiler attachment is supported on Windows x64; Linux x64 supports startup instrumentation. <a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/architecture-and-runtime.md#runtime-compatibility-matrix">Platform details ↗</a></p>
       </section>
 
       <section class="section prompt-section">
-        <div class="prompt-copy"><p class="eyebrow">ASK A PRECISE QUESTION</p><h2>Your agent.<br />A real laboratory.</h2><p>The companion skill guides tool selection, scoped authorization, measurement, and interpretation. Start with the investigation you need.</p><ul class="check-list"><li>Bound attachment and execution with scoped CLI grants.</li><li>Validate semantic output outside the measured interval.</li><li>Retain evidence across sessions and agent restarts.</li></ul></div>
+        <div class="prompt-copy"><p class="eyebrow">START WITH YOUR WORKLOAD</p><h2>Set the goal.<br />Let your agent investigate.</h2><p>Bring an application, library, service, or batch job. Describe the cost you want to reduce; your agent uses DotNetLab to profile the workload and test improvements.</p><ul class="check-list"><li>Spend less CPU time on a hot path.</li><li>Allocate fewer objects per operation.</li><li>Reduce latency under representative load.</li></ul></div>
         <div class="prompt-window">
           <div class="window-bar dark"><span></span><span></span><span></span><b>agent / investigation prompt</b></div>
           <div class="prompt-tabs" aria-label="Example investigations" data-tab-group>
             <div class="tab-buttons" role="tablist" aria-label="Example investigation">
-              <button type="button" role="tab" id="tab-optimize" aria-controls="panel-optimize" aria-selected="true" data-tab="panel-optimize">Optimize</button>
-              <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1" data-tab="panel-compare">Compare</button>
-              <button type="button" role="tab" id="tab-confirm" aria-controls="panel-confirm" aria-selected="false" tabindex="-1" data-tab="panel-confirm">Confirm</button>
+              <button type="button" role="tab" id="tab-optimize" aria-controls="panel-optimize" aria-selected="true" data-tab="panel-optimize">Throughput</button>
+              <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1" data-tab="panel-compare">Allocations</button>
+              <button type="button" role="tab" id="tab-confirm" aria-controls="panel-confirm" aria-selected="false" tabindex="-1" data-tab="panel-confirm">Latency</button>
             </div>
-            <div class="prompt-panel" role="tabpanel" id="panel-optimize" aria-labelledby="tab-optimize" tabindex="0"><p class="code-comment">// Set the performance target.</p><pre id="prompt-optimize">Use DotNetLab to increase the performance of this library.
-Aim for 10x performance increase.</pre><div class="prompt-bottom"><code>profile → experiment → confirm</code><button type="button" data-copy-target="prompt-optimize">Copy prompt</button></div></div>
-            <div class="prompt-panel" role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" tabindex="0" hidden><p class="code-comment">// Test a candidate against a declared baseline.</p><pre id="prompt-compare">Use dotnetlab to compare the current parser
-with a Span-based candidate.
+            <div class="prompt-panel" role="tabpanel" id="panel-optimize" aria-labelledby="tab-optimize" tabindex="0"><p class="code-comment">// Process more work in the same time.</p><pre id="prompt-optimize">Use DotNetLab to improve this library's throughput.
 
-Register a cooperative harness scenario with
-deterministic inputs and output-equivalence checks.
-Freeze a randomized block plan with at least 12 blocks.
+Profile a representative workload and identify
+the largest CPU costs. Implement and compare
+candidate optimizations, checking output correctness
+and allocations. Confirm the gains in fresh builds.</pre><div class="prompt-bottom"><code>profile → optimize → verify</code><button type="button" data-copy-target="prompt-optimize">Copy prompt</button></div></div>
+            <div class="prompt-panel" role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" tabindex="0" hidden><p class="code-comment">// Reduce memory allocated per operation.</p><pre id="prompt-compare">Use DotNetLab to reduce allocations in this parser.
 
-Use ns/op as the primary metric and allocated bytes
-as a guardrail. Report uncertainty and validation.</pre><div class="prompt-bottom"><code>hypothesis → plan → compare</code><button type="button" data-copy-target="prompt-compare">Copy prompt</button></div></div>
-            <div class="prompt-panel" role="tabpanel" id="panel-confirm" aria-labelledby="tab-confirm" tabindex="0" hidden><p class="code-comment">// Confirm the source change in normal builds.</p><pre id="prompt-confirm">Use dotnetlab to confirm the selected optimization.
+Find the allocation hotspots, then test ways to
+avoid intermediate strings and reuse buffers.
+Check output equivalence and throughput as well as
+allocated bytes. Confirm the selected change
+in fresh builds.</pre><div class="prompt-bottom"><code>trace → compare → confirm</code><button type="button" data-copy-target="prompt-compare">Copy prompt</button></div></div>
+            <div class="prompt-panel" role="tabpanel" id="panel-confirm" aria-labelledby="tab-confirm" tabindex="0" hidden><p class="code-comment">// Investigate the slow end of the distribution.</p><pre id="prompt-confirm">Use DotNetLab to investigate p99 latency in this
+message handler under representative burst load.
 
-Build baseline and candidate from source.
-Register both normal-build bundles and freeze
-a fresh-process confirmation plan.
-
-Run with diagnostics disabled. Check correctness
-and allocation guardrails, then record a decision
-linked to the exploratory and confirmation evidence.</pre><div class="prompt-bottom"><code>build → confirm → decide</code><button type="button" data-copy-target="prompt-confirm">Copy prompt</button></div></div>
+Measure per-operation latencies and inspect GC
+and contention evidence. Test a focused change,
+check correctness, and report whether the p99
+improvement holds across independent blocks.</pre><div class="prompt-bottom"><code>measure → explain → test</code><button type="button" data-copy-target="prompt-confirm">Copy prompt</button></div></div>
           </div>
         </div>
       </section>
 
       <section class="section install-section" id="install">
-        <div class="install-copy"><p class="eyebrow">GET STARTED</p><h2>A performance lab.<br /><span>In your agent's toolkit.</span></h2><p>Install the CLI, MCP server, and companion skill for your coding clients. The installer downloads a matching release, or builds from source when no release matches.</p><p>Use a <strong>.NET 10+ runtime or SDK</strong> on Windows x64 or Linux x64. After installation, restart your coding client and run <code>dotnetlab compatibility</code>.</p><a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab#installation">All installation options <span aria-hidden="true">↗</span></a></div>
+        <div class="install-copy"><p class="eyebrow">GET STARTED</p><h2>Your application.<br /><span>Your first investigation.</span></h2><p>The installer configures the CLI, MCP server, and companion skill for Codex, Claude Code, Cursor, and Google Antigravity. It downloads a matching release, or builds from source when no release matches.</p><p>Run DotNetLab with a <strong>.NET 10+ runtime or SDK</strong> on Windows x64 or Linux x64. It can investigate <strong>.NET 6+ CoreCLR applications</strong>.</p><p>After installation, restart your coding client, verify compatibility, and open your application's repository. Give your agent the starting prompt and a workload to exercise.</p><a class="text-link" href="https://github.com/tedd/Tedd.DotNetLab#installation">Client selection and installation options <span aria-hidden="true">↗</span></a></div>
         <div class="install-box" data-tab-group>
           <div class="tab-buttons" role="tablist" aria-label="Installation platform">
             <button type="button" role="tab" id="tab-windows" aria-controls="panel-windows" aria-selected="true" data-tab="panel-windows">Windows / PowerShell</button>
@@ -145,7 +179,9 @@ linked to the exploratory and confirmation evidence.</pre><div class="prompt-bot
           </div>
           <div class="install-panel" role="tabpanel" id="panel-windows" aria-labelledby="tab-windows" tabindex="0"><p class="micro">01 / INSTALL FOR YOUR CODING CLIENTS</p><pre><code id="install-windows">irm https://raw.githubusercontent.com/tedd/Tedd.DotNetLab/main/tools/install.ps1 | iex</code></pre><button class="copy-install" type="button" data-copy-target="install-windows">Copy command</button></div>
           <div class="install-panel" role="tabpanel" id="panel-linux" aria-labelledby="tab-linux" tabindex="0" hidden><p class="micro">01 / INSTALL FOR YOUR CODING CLIENTS</p><pre><code id="install-linux">curl -fsSL https://raw.githubusercontent.com/tedd/Tedd.DotNetLab/main/tools/install.sh | bash</code></pre><button class="copy-install" type="button" data-copy-target="install-linux">Copy command</button></div>
-          <div class="verify-install"><p class="micro">02 / VERIFY, THEN RESTART YOUR CODING CLIENT</p><code>dotnetlab compatibility</code></div>
+          <div class="verify-install"><p class="micro">02 / RESTART YOUR CODING CLIENT</p><p>Start a new session so the MCP tools and skill load.</p></div>
+          <div class="verify-install"><p class="micro">03 / VERIFY COMPATIBILITY IN YOUR TERMINAL</p><code>dotnetlab compatibility</code></div>
+          <div class="first-investigation"><p class="micro">04 / OPEN YOUR PROJECT AND ASK YOUR AGENT</p><p>Find the largest bottlenecks, implement candidate optimizations, and verify the gains.</p><button class="copy-install" type="button" data-copy-target="prompt-start">Copy starting prompt</button></div>
           <p class="install-footnote">Linux trace parsing requires delegated cgroup v2 memory and pids controllers. WSL catalogs require a local Linux filesystem. <a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/building-and-verification.md">Setup guide ↗</a></p>
         </div>
       </section>
@@ -154,7 +190,7 @@ linked to the exploratory and confirmation evidence.</pre><div class="prompt-bot
         <p class="eyebrow">GO DEEPER</p><div class="resource-links"><a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/harness-integration.md"><span>01 / INTEGRATE</span><strong>Cooperative harness</strong><span aria-hidden="true">↗</span></a><a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/statistical-contract.md"><span>02 / UNDERSTAND</span><strong>Statistical methods</strong><span aria-hidden="true">↗</span></a><a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/docs/cli-and-mcp-reference.md"><span>03 / REFERENCE</span><strong>CLI &amp; MCP tools</strong><span aria-hidden="true">↗</span></a></div>
       </section>
     </main>
-    <footer><a class="brand" href="#top">TEDD<span class="brand-slash">/</span>DOTNETLAB</a><p>.NET performance engineering, backed by evidence.</p><div><a href="https://github.com/tedd/Tedd.DotNetLab">GitHub</a><a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/LICENSE">Apache-2.0</a><a href="https://tedd.no/Tedd.Voxtree/">Tedd.Voxtree ↗</a></div></footer>
+    <footer><a class="brand" href="#top">TEDD<span class="brand-slash">/</span>DOTNETLAB</a><p>Find the bottleneck. Improve the code. Verify the gain.</p><div><a href="https://github.com/tedd/Tedd.DotNetLab">GitHub</a><a href="https://github.com/tedd/Tedd.DotNetLab/blob/main/LICENSE">Apache-2.0</a><a href="https://tedd.no/Tedd.Voxtree/">Tedd.Voxtree ↗</a></div></footer>
     <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
   </body>
 </html>
