@@ -108,18 +108,12 @@
           <div class="window-bar dark"><span></span><span></span><span></span><b>agent / investigation prompt</b></div>
           <div class="prompt-tabs" aria-label="Example investigations" data-tab-group>
             <div class="tab-buttons" role="tablist" aria-label="Example investigation">
-              <button type="button" role="tab" id="tab-profile" aria-controls="panel-profile" aria-selected="true" data-tab="panel-profile">Profile</button>
+              <button type="button" role="tab" id="tab-optimize" aria-controls="panel-optimize" aria-selected="true" data-tab="panel-optimize">Optimize</button>
               <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1" data-tab="panel-compare">Compare</button>
               <button type="button" role="tab" id="tab-confirm" aria-controls="panel-confirm" aria-selected="false" tabindex="-1" data-tab="panel-confirm">Confirm</button>
             </div>
-            <div class="prompt-panel" role="tabpanel" id="panel-profile" aria-labelledby="tab-profile" tabindex="0"><p class="code-comment">// Find the cost before changing the code.</p><pre id="prompt-profile">Use dotnetlab to discover my running .NET application.
-Capture a 10-second CPU and allocation trace.
-
-Show the top inclusive and exclusive CPU hotspots,
-allocation hotspots, and GC pauses overlapping
-slow windows.
-
-Explain which evidence supports the next experiment.</pre><div class="prompt-bottom"><code>discover → capture → query</code><button type="button" data-copy-target="prompt-profile">Copy prompt</button></div></div>
+            <div class="prompt-panel" role="tabpanel" id="panel-optimize" aria-labelledby="tab-optimize" tabindex="0"><p class="code-comment">// Set the performance target.</p><pre id="prompt-optimize">Use DotNetLab to increase the performance of this library.
+Aim for 10x performance increase.</pre><div class="prompt-bottom"><code>profile → experiment → confirm</code><button type="button" data-copy-target="prompt-optimize">Copy prompt</button></div></div>
             <div class="prompt-panel" role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" tabindex="0" hidden><p class="code-comment">// Test a candidate against a declared baseline.</p><pre id="prompt-compare">Use dotnetlab to compare the current parser
 with a Span-based candidate.
 
