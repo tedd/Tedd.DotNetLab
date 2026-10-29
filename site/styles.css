@@ -47,6 +47,9 @@ nav .nav-cta:hover { color: white; background: var(--aqua-dark); }
 .eyebrow > span { display: inline-block; width: 26px; height: 1px; margin: 0 .6rem .2rem 0; background: currentColor; }
 .lede { max-width: 610px; margin: 1.8rem 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.25vw, 1.2rem); line-height: 1.65; }
 .lede strong { color: #294d51; font-weight: 500; }
+.hero-source { margin: 1.25rem 0 0; color: var(--muted); font-size: .8rem; }
+.hero-source a { color: var(--aqua-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.hero-source + .lede { margin-top: 1.25rem; }
 .hero-detail { margin: 1rem 0 0; color: var(--muted); font-size: .85rem; }
 .actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
 .button { display: inline-flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 50px; padding: .85rem 1.15rem; border: 1px solid #aec7c1; font: 600 .8rem var(--display); transition: background .2s, transform .2s; }
@@ -104,6 +107,14 @@ figcaption { padding: .75rem 1rem; background: #f1f7f4; border-top: 1px solid va
 .table-scroll th, .table-scroll td { padding: .8rem; border-bottom: 1px solid var(--line); }
 .table-scroll th { font-weight: 600; }
 .table-scroll td { white-space: nowrap; }
+.technical-capabilities { background: white; border-bottom: 1px solid var(--line); }
+.technical-capabilities h3 { margin: 2rem 0 0; }
+.capability-table table { table-layout: fixed; font-size: .9rem; }
+.capability-table th, .capability-table td { padding: 1.25rem; vertical-align: top; overflow-wrap: anywhere; }
+.capability-table th:first-child { width: 28%; }
+.capability-table thead { background: var(--aqua-light); }
+.capability-table td { white-space: normal; color: var(--muted); }
+.capability-table code { color: var(--ink); font-size: .9em; }
 .section-intro { display: grid; grid-template-columns: 1.1fr 1fr; align-items: end; gap: 4rem; margin-bottom: 3.5rem; }
 .section-intro > p { max-width: 540px; margin: 0; color: var(--muted); font-size: 1.05rem; }
 .workflow-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
@@ -222,6 +233,9 @@ footer > div { display: flex; flex-wrap: wrap; gap: 1.2rem; }
   .protocol li { gap: .6rem; }
   .protocol div > span { font-size: .72rem; }
   .result-chart { padding: 1.3rem; }
+  .capability-table table { font-size: .8rem; }
+  .capability-table th, .capability-table td { padding: .85rem .6rem; }
+  .capability-table th:first-child { width: 36%; }
   figcaption { font-size: .6rem; }
   .proof-strip p { padding: 1.3rem .6rem; }
   .proof-strip strong { font-size: 1rem; }
