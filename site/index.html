@@ -117,15 +117,33 @@
         <h2 id="technical-capabilities-title">Technical capabilities</h2>
         <h3 id="runtime-diagnostics-title">Runtime diagnostics and code inspection</h3>
         <div class="table-scroll capability-table" role="region" aria-labelledby="runtime-diagnostics-title" tabindex="0">
-          <table>
-            <thead><tr><th scope="col">Capability</th><th scope="col">What it enables</th></tr></thead>
-            <tbody>
-              <tr><th scope="row">Live CPU profiling</th><td>EventPipe sample capture, inclusive/exclusive call-stack hotspots, and target execution-window analysis to locate expensive methods.</td></tr>
-              <tr><th scope="row">Allocations, GC, and runtime events</th><td>Allocation stacks, per-generation GC pauses, runtime counters, contention and JIT events, and correlation of GC suspensions with measured execution windows.</td></tr>
-              <tr><th scope="row">JIT x64 assembly</th><td>Live native-code snapshots, IL/metadata inspection, <code>Iced</code> disassembly, and instruction diffs to investigate inlining, bounds checks, and vectorization.</td></tr>
-              <tr><th scope="row">Live C# method replacement</th><td>Import a selected compiled method body and test it through CoreCLR ReJIT while retaining the process and application objects. Supported bodies include instance fields, floating-point arithmetic, arrays, spans, refs, structs, and existing SIMD calls.</td></tr>
-              <tr><th scope="row">Selected method probes</th><td>Instrument supported methods for invocation counts, normal/exceptional outcomes, and optional timing, with setup validation and original-body restoration.</td></tr>
-              <tr><th scope="row">Runtime comparisons</th><td>Discover installed .NET runtimes and pin an exact release or preview using <code>target_runtime_version</code>. Windows <code>Core_Root</code>/<code>corerun</code> development builds have a separate quiet-validation workflow.</td></tr>
+          <table role="table" aria-labelledby="runtime-diagnostics-title">
+            <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Capability</th><th scope="col" role="columnheader">What it enables</th></tr></thead>
+            <tbody role="rowgroup">
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4m-13-3h2l1-3 2 6 1-3h2"/></svg></span><span>Live CPU profiling</span></span></th>
+                <td role="cell">EventPipe sample capture, inclusive/exclusive call-stack hotspots, and target execution-window analysis to locate expensive methods.</td>
+              </tr>
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01M12 7h5m-5 10h5M8 10v4m8-4v4"/></svg></span><span>Allocations, GC, and runtime events</span></span></th>
+                <td role="cell">Allocation stacks, per-generation GC pauses, runtime counters, contention and JIT events, and correlation of GC suspensions with measured execution windows.</td>
+              </tr>
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M6 5.5h.01M9 5.5h.01M8 12l-3 3 3 3m8-6 3 3-3 3m-3-7-2 8"/></svg></span><span>JIT x64 assembly</span></span></th>
+                <td role="cell">Live native-code snapshots, IL/metadata inspection, <code>Iced</code> disassembly, and instruction diffs to investigate inlining, bounds checks, and vectorization.</td>
+              </tr>
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 8a8 8 0 0 0-14-2L3 9m0-5v5h5M4 16a8 8 0 0 0 14 2l3-3m0 5v-5h-5M9 10l-2 2 2 2m6-4 2 2-2 2"/></svg></span><span>Live C# method replacement</span></span></th>
+                <td role="cell"><p>Import a selected compiled method body and test it through CoreCLR ReJIT while retaining the process and application objects.</p><p>Supported bodies include instance fields, floating-point arithmetic, arrays, spans, refs, structs, and existing SIMD calls.</p></td>
+              </tr>
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></span><span>Selected method probes</span></span></th>
+                <td role="cell">Instrument supported methods for invocation counts, normal/exceptional outcomes, and optional timing, with setup validation and original-body restoration.</td>
+              </tr>
+              <tr role="row">
+                <th scope="row" role="rowheader"><span class="capability-name"><span class="capability-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg></span><span>Runtime comparisons</span></span></th>
+                <td role="cell"><p>Discover installed .NET runtimes and pin an exact release or preview using <code>target_runtime_version</code>.</p><p>Windows <code>Core_Root</code>/<code>corerun</code> development builds have a separate quiet-validation workflow.</p></td>
+              </tr>
             </tbody>
           </table>
         </div>

@@ -107,14 +107,25 @@ figcaption { padding: .75rem 1rem; background: #f1f7f4; border-top: 1px solid va
 .table-scroll th, .table-scroll td { padding: .8rem; border-bottom: 1px solid var(--line); }
 .table-scroll th { font-weight: 600; }
 .table-scroll td { white-space: nowrap; }
-.technical-capabilities { background: white; border-bottom: 1px solid var(--line); }
-.technical-capabilities h3 { margin: 2rem 0 0; }
-.capability-table table { table-layout: fixed; font-size: .9rem; }
-.capability-table th, .capability-table td { padding: 1.25rem; vertical-align: top; overflow-wrap: anywhere; }
-.capability-table th:first-child { width: 28%; }
-.capability-table thead { background: var(--aqua-light); }
-.capability-table td { white-space: normal; color: var(--muted); }
-.capability-table code { color: var(--ink); font-size: .9em; }
+.technical-capabilities { background: linear-gradient(180deg, #f1f8f5, var(--canvas)); border-block: 1px solid var(--line); }
+.technical-capabilities h3 { margin: 1.25rem 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.5; letter-spacing: -.02em; }
+.capability-table { margin-top: 2.5rem; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: white; box-shadow: 0 12px 40px #164c4008; }
+.capability-table table { table-layout: fixed; font-size: .93rem; }
+.capability-table th, .capability-table td { padding: 1.75rem 2rem; vertical-align: top; overflow-wrap: break-word; }
+.capability-table th:first-child { width: 35%; }
+.capability-table thead { background: #e9f3ef; }
+.capability-table thead th { padding-block: 1.1rem; color: var(--aqua-dark); font: 700 .65rem/1.5 var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.capability-table tbody th { font: 500 1.05rem/1.45 var(--display); letter-spacing: -.025em; }
+.capability-table tbody tr:nth-child(even) { background: #f7faf9; }
+.capability-table tbody tr:last-child > * { border-bottom: 0; }
+.capability-table td { white-space: normal; color: var(--muted); line-height: 1.8; }
+.capability-table td p { margin: 0; }
+.capability-table td p + p { margin-top: .6rem; }
+.capability-table code { padding: .12em .35em; border: 1px solid #dce8e3; border-radius: 4px; background: #eef4f1; color: var(--aqua-dark); font-size: .85em; overflow-wrap: anywhere; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.capability-name { display: flex; align-items: center; gap: 1rem; }
+.capability-name > span:last-child { min-width: 0; }
+.capability-icon { display: grid; place-items: center; flex: 0 0 44px; height: 44px; border: 1px solid #c8e3da; border-radius: 12px; background: #e4f2ec; color: var(--aqua); }
+.capability-icon svg { width: 24px; height: 24px; }
 .section-intro { display: grid; grid-template-columns: 1.1fr 1fr; align-items: end; gap: 4rem; margin-bottom: 3.5rem; }
 .section-intro > p { max-width: 540px; margin: 0; color: var(--muted); font-size: 1.05rem; }
 .workflow-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
@@ -191,6 +202,8 @@ footer > div { display: flex; flex-wrap: wrap; gap: 1.2rem; }
   .lab-heading h2 { font-size: 1.5rem; }
   .protocol div > span { font-size: .75rem; }
   .section-intro, .results-section { gap: 2rem; }
+  .capability-table th, .capability-table td { padding: 1.5rem; }
+  .capability-name { align-items: flex-start; gap: .85rem; }
   .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .prompt-section, .install-section { gap: 2.5rem; }
   .workflow-grid article { padding-right: 1.5rem; }
@@ -233,9 +246,17 @@ footer > div { display: flex; flex-wrap: wrap; gap: 1.2rem; }
   .protocol li { gap: .6rem; }
   .protocol div > span { font-size: .72rem; }
   .result-chart { padding: 1.3rem; }
-  .capability-table table { font-size: .8rem; }
-  .capability-table th, .capability-table td { padding: .85rem .6rem; }
-  .capability-table th:first-child { width: 36%; }
+  .capability-table { margin-top: 1.75rem; }
+  .capability-table table, .capability-table tbody, .capability-table tr { display: block; }
+  .capability-table table { font-size: .9rem; }
+  .capability-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .capability-table tbody tr { padding: 1.4rem; border-bottom: 1px solid var(--line); }
+  .capability-table tbody tr:last-child { border-bottom: 0; }
+  .capability-table th, .capability-table td { display: block; width: 100%; padding: 0; border: 0; }
+  .capability-table th:first-child { width: 100%; }
+  .capability-table tbody th { font-size: 1.05rem; }
+  .capability-table td { margin-top: 1rem; }
+  .capability-name { align-items: center; }
   figcaption { font-size: .6rem; }
   .proof-strip p { padding: 1.3rem .6rem; }
   .proof-strip strong { font-size: 1rem; }
