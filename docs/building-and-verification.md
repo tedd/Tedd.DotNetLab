@@ -22,7 +22,7 @@ This guide covers building `Tedd.DotNetLab` from source, compiling the optional 
 All NuGet package versions are centrally pinned in [`Directory.Packages.props`](../Directory.Packages.props) with committed lock files (`packages.lock.json`) enforced via `RestorePackagesWithLockFile=true`.
 
 By default, [`Directory.Build.props`](../Directory.Build.props) directs MSBuild `bin/` and `obj/` outputs to `$(DotNetLabBuildRoot)`:
-- Defaults to `artifacts/` at the repository root (gitignored) on standard machines, or `D:/Workspaces/AI/dotnetlab-implementation` when `D:/Workspaces/AI` is present.
+- Defaults to `artifacts/` at the repository root (gitignored).
 - Override at any time with `-p:DotNetLabBuildRoot=/custom/build/path`.
 
 ### Build Commands (Windows PowerShell)
