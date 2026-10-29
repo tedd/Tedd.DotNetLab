@@ -78,6 +78,7 @@ jobs:
         shell: pwsh
         env:
           DOTNETLAB_TEST_BUILD_ROOT: ${{ runner.temp }}/dotnetlab-build
+          DOTNET_ROLL_FORWARD: LatestPatch
         run: |
           dotnet test tests/Tedd.DotNetLab.Tests/Tedd.DotNetLab.Tests.csproj -c Release --no-build "-p:DotNetLabBuildRoot=${{ runner.temp }}/dotnetlab-build" --filter "FullyQualifiedName~InstallerTests|FullyQualifiedName~ControllerRuntimeTests|FullyQualifiedName~CompatibilityReportTests|FullyQualifiedName~FoundationTests"
 
