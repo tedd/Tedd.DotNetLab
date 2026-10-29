@@ -109,6 +109,7 @@ figcaption { padding: .75rem 1rem; background: #f1f7f4; border-top: 1px solid va
 .table-scroll td { white-space: nowrap; }
 .technical-capabilities { background: white; border-top: 1px solid var(--line); }
 .technical-capabilities code { color: var(--aqua-dark); font-size: .85em; overflow-wrap: anywhere; }
+.capability-art { width: 240px; max-width: 100%; height: auto; margin-bottom: 1.75rem; }
 .section-intro { display: grid; grid-template-columns: 1.1fr 1fr; align-items: end; gap: 4rem; margin-bottom: 3.5rem; }
 .section-intro > p { max-width: 540px; margin: 0; color: var(--muted); font-size: 1.05rem; }
 .workflow-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
@@ -123,7 +124,6 @@ figcaption { padding: .75rem 1rem; background: #f1f7f4; border-top: 1px solid va
 .feature-card { padding: 2rem; background: var(--canvas); }
 .feature-card.featured { background: var(--aqua-light); }
 .feature-symbol { display: block; min-height: 75px; color: var(--aqua); font: 400 2rem var(--display); letter-spacing: -.06em; }
-.feature-symbol svg { width: 32px; height: 32px; }
 .card-kicker { margin: 0 0 .75rem; color: var(--aqua); font: 700 .6rem var(--display); letter-spacing: .1em; }
 .feature-card > p:last-child { margin-bottom: 0; }
 .section-note { max-width: 950px; margin: 1.5rem 0 0; color: var(--muted); font-size: .75rem; }

@@ -117,37 +117,37 @@
         <div class="section-intro"><div><p class="eyebrow">TECHNICAL CAPABILITIES</p><h2 id="technical-capabilities-title">Runtime diagnostics.<br />Code inspection.</h2></div><p>Profile CPU and memory, inspect generated code, test live method changes, and compare .NET runtimes. Give your agent the evidence to explain expensive work and investigate improvements.</p></div>
         <div class="feature-grid">
           <article class="feature-card featured">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4m-13-3h2l1-3 2 6 1-3h2"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/cpu-profiling.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">EVENTPIPE &amp; HOTSPOTS</p>
             <h3>Live CPU profiling</h3>
             <p>EventPipe sample capture, inclusive/exclusive call-stack hotspots, and target execution-window analysis to locate expensive methods.</p>
           </article>
           <article class="feature-card">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01M12 7h5m-5 10h5M8 10v4m8-4v4"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/memory-runtime.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">MEMORY &amp; RUNTIME</p>
             <h3>Allocations, GC, and runtime events</h3>
             <p>Allocation stacks, per-generation GC pauses, runtime counters, contention and JIT events, and correlation of GC suspensions with measured execution windows.</p>
           </article>
           <article class="feature-card">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M6 5.5h.01M9 5.5h.01M8 12l-3 3 3 3m8-6 3 3-3 3m-3-7-2 8"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/jit-assembly.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">NATIVE CODE &amp; DISASSEMBLY</p>
             <h3>JIT x64 assembly</h3>
             <p>Live native-code snapshots, IL/metadata inspection, <code>Iced</code> disassembly, and instruction diffs to investigate inlining, bounds checks, and vectorization.</p>
           </article>
           <article class="feature-card">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 8a8 8 0 0 0-14-2L3 9m0-5v5h5M4 16a8 8 0 0 0 14 2l3-3m0 5v-5h-5M9 10l-2 2 2 2m6-4 2 2-2 2"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/live-rejit.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">CORECLR REJIT</p>
             <h3>Live C# method replacement</h3>
             <p>Import a selected compiled method body and test it through CoreCLR ReJIT while retaining the process and application objects. Supported bodies include instance fields, floating-point arithmetic, arrays, spans, refs, structs, and existing SIMD calls.</p>
           </article>
           <article class="feature-card">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/method-probes.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">METHOD INSTRUMENTATION</p>
             <h3>Selected method probes</h3>
             <p>Instrument supported methods for invocation counts, normal/exceptional outcomes, and optional timing, with setup validation and original-body restoration.</p>
           </article>
           <article class="feature-card">
-            <span class="feature-symbol"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16m-5-5 5 5-5 5M20 17H4m5-5-5 5 5 5"/></svg></span>
+            <img class="capability-art" src="assets/capabilities/runtime-comparisons.svg" width="240" height="168" alt="" loading="lazy" decoding="async" />
             <p class="card-kicker">RELEASES &amp; PREVIEWS</p>
             <h3>Runtime comparisons</h3>
             <p>Discover installed .NET runtimes and pin an exact release or preview using <code>target_runtime_version</code>. Windows <code>Core_Root</code>/<code>corerun</code> development builds have a separate quiet-validation workflow.</p>
