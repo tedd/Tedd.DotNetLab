@@ -45,7 +45,7 @@ Usage: install.sh [options]
   --client <all|codex|claude|cursor|antigravity|none>  AI client(s) to configure (default: all)
   --scope <user|project>                               Configuration scope (default: user)
   --project-dir <path>                                 Project directory when --scope project
-  --install-dir <path>                                 Destination directory for binaries
+  --install-dir <path>                                 Binary directory (default: $XDG_DATA_HOME/dotnetlab/bin or ~/.local/share/dotnetlab/bin)
   --workspace <path>                                   Tedd.DotNetLab workspace directory
   --version <tag|latest>                               GitHub Release tag (default: latest)
   --from-source                                        Build from local checkout or shallow git clone
@@ -83,16 +83,10 @@ mkdir -p "$INSTALL_DIR"
 INSTALL_DIR="$(cd "$INSTALL_DIR" && pwd)"
 
 make_scratch() {
-    local base
-    if [[ -d "/mnt/d/Workspaces/AI" ]]; then
-        base="/mnt/d/Workspaces/AI"
-    else
-        base="$(dirname "$INSTALL_DIR")"
-    fi
-    mktemp -d "$base/.dotnetlab-install.XXXXXX"
+    mktemp -d "$(dirname "$INSTALL_DIR")/.dotnetlab-install.XXXXXX"
 }
 
-install_from_release() {
+install_from_release() (
     local api_url
     if [[ "$VERSION" == "latest" ]]; then
         api_url="https://api.github.com/repos/$REPO/releases/latest"
@@ -102,13 +96,14 @@ install_from_release() {
     log "Checking GitHub Releases ($REPO @ $VERSION)..."
     local scratch
     scratch="$(make_scratch)"
-    trap 'rm -rf "$scratch"' RETURN
+    trap 'rm -rf -- "$scratch"' EXIT
 
     local http_code
     http_code="$(curl -sSL -w '%{http_code}' -H 'Accept: application/vnd.github+json' -o "$scratch/release.json" "$api_url" || true)"
     if [[ "$http_code" == "404" && "$VERSION" == "latest" ]]; then
         log "No published GitHub Release found yet; falling back to source build..."
-        return 1
+        install_from_source
+        return 0
     fi
     if [[ "$http_code" != "200" ]]; then
         echo "[Tedd.DotNetLab] Failed to query GitHub Releases (HTTP $http_code)." >&2
@@ -119,7 +114,8 @@ install_from_release() {
     asset_url="$(grep -oE '"browser_download_url":[[:space:]]*"[^"]*(linux-x64\.(tar\.gz|zip))"' "$scratch/release.json" | head -n1 | sed -E 's/.*"([^"]+)"$/\1/' || true)"
     if [[ -z "$asset_url" ]]; then
         log "No prebuilt linux-x64 archive in release; falling back to source build..."
-        return 1
+        install_from_source
+        return 0
     fi
     asset_name="$(basename "$asset_url")"
     log "Downloading $asset_name..."
@@ -148,9 +144,9 @@ install_from_release() {
     fi
     cp -Rf "$scratch/extracted/." "$INSTALL_DIR/"
     return 0
-}
+)
 
-install_from_source() {
+install_from_source() (
     if ! "$DOTNET_EXE" --list-sdks 2>/dev/null | grep -qE '^(10|[1-9][1-9]|[2-9][0-9])\.'; then
         echo "[Tedd.DotNetLab] Building from source requires a .NET 10 or newer SDK (including .NET 11/12 preview or RC SDKs)." >&2
         exit 1
@@ -169,7 +165,7 @@ install_from_source() {
 
     local scratch
     scratch="$(make_scratch)"
-    trap 'rm -rf "$scratch"' RETURN
+    trap 'rm -rf -- "$scratch"' EXIT
 
     local source_root="$local_repo"
     if [[ -z "$source_root" ]]; then
@@ -192,14 +188,12 @@ install_from_source() {
     "$DOTNET_EXE" restore "$host_proj" --locked-mode "-p:DotNetLabBuildRoot=$build_root"
     "$DOTNET_EXE" publish "$host_proj" -c Release --no-restore --output "$publish_dir" "-p:DotNetLabBuildRoot=$build_root" -p:UseAppHost=false -p:SelfContained=false -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=false
     cp -Rf "$publish_dir/." "$INSTALL_DIR/"
-}
+)
 
 if [[ "$FROM_SOURCE" == "1" || "$FROM_SOURCE" == "true" ]]; then
     install_from_source
 else
-    if ! install_from_release; then
-        install_from_source
-    fi
+    install_from_release
 fi
 
 HOST_DLL="$INSTALL_DIR/Tedd.DotNetLab.Host.dll"

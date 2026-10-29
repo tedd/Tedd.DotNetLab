@@ -17,7 +17,7 @@
     Target project directory when -Scope project is used (defaults to current directory).
 
 .PARAMETER InstallDir
-    Destination directory for Tedd.DotNetLab binaries.
+    Destination directory for binaries (default: %LOCALAPPDATA%\Tedd.DotNetLab\bin).
 
 .PARAMETER Workspace
     Tedd.DotNetLab catalog/artifact workspace path.
@@ -96,11 +96,7 @@ $InstallDir = [System.IO.Path]::GetFullPath($InstallDir)
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
 function Get-ScratchRoot {
-    if (Test-Path -LiteralPath 'D:\Workspaces\AI') {
-        $dir = Join-Path 'D:\Workspaces\AI' ('dotnetlab-install-' + [Guid]::NewGuid().ToString('N'))
-    } else {
-        $dir = Join-Path ([System.IO.Path]::GetDirectoryName($InstallDir)) ('.install-staging-' + [Guid]::NewGuid().ToString('N'))
-    }
+    $dir = Join-Path ([System.IO.Path]::GetDirectoryName($InstallDir)) ('.install-staging-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $dir -Force | Out-Null
     return $dir
 }

@@ -126,7 +126,9 @@ You can install `Tedd.DotNetLab` for **Codex**, **Claude Code**, **Cursor**, **G
 
 ### Option 1: One-Line Shell Installer (Recommended)
 
-Downloads the latest GitHub Release (verifying SHA-256 checksums, or automatically building from source if no prebuilt release matches), places the `dotnetlab` CLI on your user `PATH`, copies the `dotnetlab` skill, and registers the MCP server across **Codex, Claude Code, Cursor, and Antigravity** without touching your other settings.
+Downloads the latest GitHub Release with SHA-256 verification (or builds from source if no release is available), places the `dotnetlab` CLI on your user `PATH`, copies the `dotnetlab` skill, and registers the MCP server across **Codex, Claude Code, Cursor, and Antigravity** without touching your other settings.
+
+Binaries install per user to `%LOCALAPPDATA%\Tedd.DotNetLab\bin` on Windows and `${XDG_DATA_HOME:-~/.local/share}/dotnetlab/bin` on Linux/WSL. Linux links the CLI into `~/.local/bin`; include that directory in your `PATH`. Build staging is created beside the installation directory and removed afterward. Source builds require a .NET 10+ SDK and Git when installing outside a checkout.
 
 **Windows (PowerShell):**
 

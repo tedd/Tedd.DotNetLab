@@ -1,10 +1,10 @@
-param([string]$BuildRoot=$(if(Test-Path 'D:\Workspaces\AI'){'D:\Workspaces\AI\dotnetlab-implementation\native'}else{Join-Path (Split-Path -Parent $PSScriptRoot) 'artifacts\native'}))
+param([string]$BuildRoot=(Join-Path (Split-Path -Parent $PSScriptRoot) 'artifacts\native'))
 $ErrorActionPreference='Stop'
 $taskEnvironment=[System.Collections.Generic.Dictionary[string,string]]::new([StringComparer]::OrdinalIgnoreCase)
 Get-ChildItem Env: | ForEach-Object { $taskEnvironment[$_.Name]=$_.Value }
 try {
 $taskBuildRoot=[IO.Path]::GetFullPath($BuildRoot)
-if((Test-Path 'D:\Workspaces\AI') -and -not $taskBuildRoot.StartsWith('D:\Workspaces\AI\',[StringComparison]::OrdinalIgnoreCase)) { throw 'Native scratch build must be beneath D:\Workspaces\AI.' }
+if([IO.Path]::GetPathRoot($taskBuildRoot) -eq $taskBuildRoot) { throw 'Native build output cannot use a filesystem root.' }
 New-Item -ItemType Directory -Path $taskBuildRoot,(Join-Path $taskBuildRoot 'tmp') -Force | Out-Null
 $env:TEMP=Join-Path $taskBuildRoot 'tmp'
 $env:TMP=$env:TEMP

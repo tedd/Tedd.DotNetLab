@@ -35,7 +35,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: global.json
+          dotnet-version: "10.0.x"
 
       - name: Build and test native Windows CoreCLR profiler
         shell: pwsh
@@ -51,7 +51,17 @@ jobs:
           New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
 
           dotnet restore src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj --locked-mode "-p:DotNetLabBuildRoot=$buildRoot"
+          if ($LASTEXITCODE) { throw 'Locked restore failed.' }
           dotnet publish src/Tedd.DotNetLab.Host/Tedd.DotNetLab.Host.csproj -c Release --no-restore --output $publishDir "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version" -p:UseAppHost=false -p:SelfContained=false -p:PublishSingleFile=false -p:PublishTrimmed=false -p:PublishReadyToRun=false
+          if ($LASTEXITCODE) { throw 'Windows publish failed.' }
+
+          foreach ($file in @('Tedd.DotNetLab.Host.dll', 'Tedd.DotNetLab.TraceWorker.runtimeconfig.json', 'Tedd.DotNetLab.Profiler.dll', 'skills/dotnetlab/SKILL.md')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $publishDir $file))) { throw "Missing distribution file: $file" }
+          }
+          dotnet --roll-forward Major (Join-Path $publishDir 'Tedd.DotNetLab.Host.dll') compatibility
+          if ($LASTEXITCODE) { throw 'Windows compatibility check failed.' }
+          dotnet --roll-forward Major (Join-Path $publishDir 'Tedd.DotNetLab.Host.dll') install all --dry-run --workspace "${{ runner.temp }}/dotnetlab-install-check"
+          if ($LASTEXITCODE) { throw 'Windows installer check failed.' }
 
           foreach ($item in @('LICENSE', 'README.md', 'SECURITY.md', 'global.json')) {
             Copy-Item -LiteralPath $item -Destination (Join-Path $publishDir $item) -Force
@@ -88,7 +98,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: global.json
+          dotnet-version: "10.0.x"
 
       - name: Build and test native Linux CoreCLR profiler
         run: |
@@ -110,6 +120,11 @@ jobs:
           if [[ -f "$BUILD_ROOT/native/Tedd.DotNetLab.Profiler.so" ]]; then
             cp "$BUILD_ROOT/native/Tedd.DotNetLab.Profiler.so" "$PUBLISH_DIR/"
           fi
+          for FILE in Tedd.DotNetLab.Host.dll Tedd.DotNetLab.TraceWorker.runtimeconfig.json Tedd.DotNetLab.Profiler.so skills/dotnetlab/SKILL.md; do
+            test -f "$PUBLISH_DIR/$FILE"
+          done
+          dotnet --roll-forward Major "$PUBLISH_DIR/Tedd.DotNetLab.Host.dll" compatibility
+          dotnet --roll-forward Major "$PUBLISH_DIR/Tedd.DotNetLab.Host.dll" install all --dry-run --workspace "${{ runner.temp }}/dotnetlab-install-check"
           cp LICENSE README.md SECURITY.md global.json "$PUBLISH_DIR/"
           cp -R docs schemas "$PUBLISH_DIR/"
 
@@ -138,7 +153,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: global.json
+          dotnet-version: "10.0.x"
 
       - name: Stage Windows and Linux native profilers
         uses: actions/download-artifact@v4
@@ -157,8 +172,11 @@ jobs:
           New-Item -ItemType Directory -Path $nupkgDir -Force | Out-Null
 
           dotnet restore Tedd.DotNetLab.sln --locked-mode "-p:DotNetLabBuildRoot=$buildRoot"
+          if ($LASTEXITCODE) { throw 'Locked solution restore failed.' }
           dotnet build Tedd.DotNetLab.sln -c Release --no-restore "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version"
+          if ($LASTEXITCODE) { throw 'Solution build failed.' }
           dotnet pack Tedd.DotNetLab.sln -c Release --no-restore --output $nupkgDir "-p:DotNetLabBuildRoot=$buildRoot" "-p:Version=$version" -p:DotNetLabPackCrossPlatform=true
+          if ($LASTEXITCODE) { throw 'NuGet pack failed.' }
           Get-ChildItem -LiteralPath $nupkgDir | Select-Object Name, Length
 
       - name: Upload NuGet packages artifact
@@ -198,6 +216,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.tag }}
+          target_commitish: ${{ github.sha }}
           generate_release_notes: true
           files: |
             dist/Tedd.DotNetLab*
