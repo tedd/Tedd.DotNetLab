@@ -175,3 +175,15 @@ Targets allocation churn, GC pause pressure, redundant buffer copies, pointer ch
 - **Clue:** Millions of long-lived small objects (`Dictionary<int, Node>`, linked trees, caches of `class` records) where **Gen2 GC pauses** or `gc.heap_size_bytes` dominate even though steady-state allocation is low—the GC must trace every reference on each full/background collection.
 - **C# Experiment:** Store the data in primitive/`struct` arrays without references (`struct Node { int Left, Right; float Value; }` in one `Node[]`, string data interned into one `byte[]`/`char[]` slab with `(offset, length)` pairs). An array of reference-free structs is a single object the GC never scans inside.
 - **Verify / Trap:** Compare `gc.gen2_collections`, `gc.heap_size_bytes`, and pause metrics from `gc-diagnostic` before/after; lifetime management becomes manual (free lists, generations—see `MEM-09`). Any reference-type field inside the struct brings tracing back.
+
+---
+
+## 5. Type Sizes & Native Interop
+
+### `MEM-19` — Managed Size vs Marshalled Size & Invariant Size Queries
+- **Clue:** Repeated `Marshal.SizeOf` calls in hot buffer sizing, record processing, or native interop paths.
+- **C# Experiment:**
+  - Establish which representation the consumer requires. Use `sizeof(T)` where supported by the language/context, or `Unsafe.SizeOf<T>()`, for managed storage size. Retain `Marshal.SizeOf<T>()` when the consumer requires the unmanaged marshalled representation.
+  - For a fixed interop type, hoist its invariant `Marshal.SizeOf<T>()` result outside the loop or cache it in a `static readonly` field. Include initialization cost when measuring cold paths.
+- **Verify / Trap:** Managed and marshalled sizes can differ, including `bool` and types affected by packing, character sets, or marshalling attributes. `Unsafe.SizeOf<T>()` for a reference type returns the reference size, not the object's heap footprint. Do not assume every `sizeof` expression is a C# compile-time constant or that parameterless `Marshal.SizeOf<T>()` boxes a value. Check the target architecture, layout, required exception behavior, and emitted code; retain the change only if representative timing/allocation measurements show a benefit.
+- **References:** [Unsafe.SizeOf](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.unsafe.sizeof), [Marshal.SizeOf](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof), [C# sizeof](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/sizeof), [sizeof() vs Marshal.SizeOf()](https://blog.tedd.no/2018/03/18/sizeof-vs-marshal-sizeof/).
