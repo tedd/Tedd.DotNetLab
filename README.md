@@ -240,6 +240,12 @@ dotnet add package Tedd.DotNetLab.Harness
 
 ---
 
+### Upgrading
+
+Tedd.DotNetLab embeds its version at compilation. On MCP connection, it checks GitHub's latest stable release with a three-second timeout and caches the result for six hours per controller process. The AI receives the installed version and, when a newer release exists, instructions to notify you and offer an upgrade. Offline or rate-limited checks do not prevent use. Run `dotnetlab version` to inspect the version and update status directly.
+
+For a script installation, stop active experiments, close connected AI sessions, and rerun the [installer](#option-1-one-line-shell-installer-recommended) with the same client, scope, installation directory, workspace, and native-extension options. Remove any pinned version option to select the latest release. For a global .NET tool installation, run `dotnet tool update -g Tedd.DotNetLab`, then `dotnetlab install` with your existing client and scope options to refresh the bundled skill and MCP configuration. Restart your AI sessions after upgrading. For a source checkout, pull the desired revision and rerun the source installer.
+
 ### Option 4: Manual Setup Instructions
 
 <details>

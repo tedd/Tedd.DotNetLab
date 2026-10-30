@@ -240,7 +240,8 @@ public static class SharedController
                 var services=new ServiceCollection();
                 services.AddLogging(logging=>logging.AddProvider(new ConnectionLog.Provider(session)));
                 services.AddSingleton(service); services.AddSingleton<LabTools>();
-                var builder=services.AddMcpServer().WithTools<McpTools>(McpCatalog.Json).WithResources<LabTools>();
+                var release=await ReleaseUpdates.GetAsync();
+                var builder=services.AddMcpServer(options=>ReleaseUpdates.Configure(options,release)).WithTools<McpTools>(McpCatalog.Json).WithResources<LabTools>();
                 if(mode[0]==1) builder.WithTools<McpPatchTools>(McpCatalog.Json);
                 await using var provider=services.BuildServiceProvider();
                 await using var server=McpServer.Create(new StreamServerTransport(pipe,pipe),

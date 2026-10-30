@@ -16,6 +16,9 @@ public sealed class McpTests
     {
         using var workspace=new TestWorkspace(); using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await using var client=await Connect(workspace.Root,timeout.Token);
+        Assert.Equal("Tedd.DotNetLab",client.ServerInfo.Name);
+        Assert.Equal(Tedd.DotNetLab.Host.ReleaseUpdates.InstalledVersion,client.ServerInfo.Version);
+        Assert.Contains("installed version:",client.ServerInstructions);
         foreach(string payload in new[]{"{\"id\":\"missing-order-test\",\"action\":\"record\"}","{\"action\":\"record\",\"id\":\"missing-order-test\"}"})
         {
             using var request=JsonDocument.Parse(payload);

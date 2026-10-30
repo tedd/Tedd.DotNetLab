@@ -11,6 +11,8 @@ Do not guess bottlenecks from syntax, claim speedups without controlled before/a
 
 ## The 7-Step Scientific Method Loop
 
+Read the MCP server's installed version and update instructions at connection. When a newer stable Tedd.DotNetLab release is reported, inform the user once per chat, link to [upgrade instructions](https://github.com/tedd/Tedd.DotNetLab#upgrading), and offer to upgrade after their agreement. If using the CLI without MCP, run `dotnetlab version` for the same check. An unavailable check does not establish that the installed version is current.
+
 | Step | Action | Exit Gate & Evidence |
 | --- | --- | --- |
 | **1. Discover & Scope** | Query `lab.discover` (`workspace`, `profiles`, `targets`, `capabilities`, `compatibility`, `scenarios`). Define cold vs steady-state objective, workload unit, primary metric, and mandatory guardrails. | Bound `target_id`, PID/start, `expected_target_epoch`, runtime version, scenario/version/input hash, and observer mode. |

@@ -14,6 +14,10 @@ using Microsoft.Extensions.Logging;
 try
 {
     ConnectionLog.Start(args);
+    if(args.Length==1&&args[0] is "version" or "--version")
+    {
+        Console.WriteLine(Wire.Serialize(await ReleaseUpdates.GetAsync())); return;
+    }
     if(args.Length==2&&args[0]=="--shared-bootstrap")
     {
         await SharedController.BootstrapAsync(args[1]); return;
@@ -96,7 +100,8 @@ try
         builder.Logging.AddConsole(options=>options.LogToStandardErrorThreshold=LogLevel.Trace);
         builder.Logging.AddProvider(new ConnectionLog.Provider());
         builder.Services.AddSingleton(serveService); builder.Services.AddSingleton<LabTools>();
-        var server=builder.Services.AddMcpServer().WithStdioServerTransport().WithTools<McpTools>(McpCatalog.Json).WithResources<LabTools>();
+        var release=await ReleaseUpdates.GetAsync();
+        var server=builder.Services.AddMcpServer(options=>ReleaseUpdates.Configure(options,release)).WithStdioServerTransport().WithTools<McpTools>(McpCatalog.Json).WithResources<LabTools>();
         if(args.Length==3) server.WithTools<McpPatchTools>(McpCatalog.Json);
         using var host=builder.Build();
         ConnectionLog.Event("stdio_server_started");

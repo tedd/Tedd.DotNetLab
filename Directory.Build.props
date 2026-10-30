@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
+    <Version Condition="'$(Version)' == ''">1.0.0-dev</Version>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DotNetLabBuildRoot Condition="'$(DotNetLabBuildRoot)' == ''">$(MSBuildThisFileDirectory)artifacts</DotNetLabBuildRoot>
     <BaseIntermediateOutputPath>$(DotNetLabBuildRoot)/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
