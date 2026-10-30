@@ -196,14 +196,42 @@ Targets CoreCLR RyuJIT Tier 1 code generation: eliminating array/span range chec
 ## 4. Generic Equality & Exception-Free Hot Paths
 
 ### `JIT-15` — Unboxed Generic Value-Type Equality & Hashing
-- **Clue:** Generic containers/helpers calling `a.Equals(b)` / `object.Equals(a, b)` / `a.GetHashCode()` on an unconstrained `T`, a custom `IEqualityComparer<T>` field invoked per element, or `struct` keys without `IEquatable<T>` (`ValueType.Equals` falls back to reflection-style field comparison and boxes). Allocation counters show per-lookup bytes, or `jit_inlining` shows `Equals` not inlined.
+- **Clue:** Hot `Dictionary<TKey, TValue>` / `HashSet<T>` lookups or `List<T>.Contains` / `IndexOf` / `Remove` using struct keys/elements without typed equality; object-based comparisons, per-lookup allocations, or expensive collision chains. Missing `IEquatable<T>` is a clue, not proof of boxing or reflection on every comparison: overrides, custom comparers, and runtime specializations affect the path.
 - **C# Experiment:**
-  - Implement `IEquatable<T>` (+ a matching `GetHashCode`) on every struct key; prefer `readonly record struct` or a hand-written `Equals(T other)`.
-  - In generic code, call `EqualityComparer<T>.Default.Equals(a, b)` directly—RyuJIT recognizes it and devirtualizes/inlines it for value-type `T`. Only store a comparer field when callers really pass custom comparers; branch once `if (typeof(T).IsValueType && comparer is null)` to a comparer-free loop (the `Dictionary<TKey,TValue>` pattern).
-  - Constrain `where T : IEquatable<T>` when you own the API so `a.Equals(b)` binds to the non-boxing overload.
-- **Verify / Trap:** `record struct` equality compares every field—hand-write `Equals` when only a key subset defines identity. Keep `Equals`/`GetHashCode` consistent and check `allocated_bytes_per_operation` drops to `0`.
+  - For owned struct types, implement `IEquatable<T>` with direct comparisons of identity fields, a matching `Equals(object?)`, `GetHashCode`, and equality operators. A `readonly record struct` is a concise baseline when all instance fields define identity; hand-write equality for a key subset or custom field semantics. Keep equality-relevant state immutable while stored in a hash collection.
+  - Use `EqualityComparer<T>.Default` in generic helpers; constrain `where T : IEquatable<T>` only when the API contract permits it. Keep custom comparer semantics intact. For external types, supply `IEqualityComparer<T>` to dictionaries/sets; `List<T>.Contains`, `IndexOf`, and `Remove` have no comparer overload.
+  - Start composite hashes with `HashCode.Combine` over the same identity fields. For custom string equality, use the same `StringComparer` for equality and hashing. Measure collision-heavy and representative key distributions, hit/miss ratios, and complete lookup cost; a cheaper hash can lose overall through extra equality calls.
+  - For a small vector key with exact component equality, use this baseline:
+    ```csharp
+    using System;
+
+    public readonly struct VectorKey : IEquatable<VectorKey>
+    {
+        public float X { get; }
+        public float Y { get; }
+        public float Z { get; }
+
+        public VectorKey(float x, float y, float z) => (X, Y, Z) = (x, y, z);
+
+        public bool Equals(VectorKey other) =>
+            X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z);
+
+        public override bool Equals(object? obj) => obj is VectorKey other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(X, Y, Z);
+        public static bool operator ==(VectorKey left, VectorKey right) => left.Equals(right);
+        public static bool operator !=(VectorKey left, VectorKey right) => !left.Equals(right);
+    }
+    ```
+- **Verify / Trap:** There is no universally fastest equality implementation. Order cheap, discriminating field checks first only when semantics permit; compare short-circuit `&&` against alternatives using actual match distributions. Do not replace semantic equality with raw memory comparison: padding, reference fields, NaNs, and signed zero can invalidate it. `float.Equals` treats NaNs as equal and signed zeros as equal; epsilon proximity is generally non-transitive and unsuitable as hash-key equality. Validate reflexivity, symmetry, transitivity, equal-value hash consistency, default values, and object/operator agreement. Measure allocations and optimized caller code on the target runtime; assigning a struct to an interface variable can itself box. Cached hashes enlarge keys and require immutable state; do not persist process-dependent `HashCode` results or add inlining attributes without evidence.
+- **References:** [IEquatable<T>](https://learn.microsoft.com/en-us/dotnet/api/system.iequatable-1), [HashCode](https://learn.microsoft.com/en-us/dotnet/api/system.hashcode), [Unity vector equality and hashing case study](https://blog.tedd.no/2018/01/13/speeding-up-unitys-vector-in-lists-dictionaries/).
 
 ### `JIT-16` — Exception-Free Hot Paths (`Try*`, `OperationStatus`)
 - **Clue:** `try { int.Parse(...) } catch (FormatException)` inside per-record loops, `KeyNotFoundException` / `InvalidCastException` used as control flow, or traces showing `FirstChanceException` storms. A thrown .NET exception costs roughly 10–50 µs (stack trace capture + unwinding)—thousands of times more than a branch.
 - **C# Experiment:** Use `int.TryParse(ReadOnlySpan<char>, ...)`, `Utf8Parser.TryParse`, `IUtf8SpanParsable<T>.TryParse`, `Dictionary.TryGetValue`, `is` / `as` patterns, and APIs returning `System.Buffers.OperationStatus` (`Done`, `NeedMoreData`, `DestinationTooSmall`, `InvalidData`) so malformed or partial input stays on a cheap branch.
 - **Verify / Trap:** Keep exceptions for truly exceptional, caller-visible failures and preserve the public contract (exception type/message where callers depend on it). Benchmark the realistic invalid-input ratio—`Try*` versions of the valid path are usually equal, so the win scales with how often input is bad.
+
+### `JIT-17` — Typed Struct Ordering for Sorts & Binary Search
+- **Clue:** Hot `List<T>.Sort`, `Array.Sort`, binary searches, or sorted collections using object-based `IComparable.CompareTo(object)` on struct elements, comparer dispatch, or comparison-related allocations.
+- **C# Experiment:** Implement `IComparable<T>` when the type has a natural order, or supply `IComparer<T>` / a comparison delegate for an operation-specific order. Compare fields lexicographically with `CompareTo` and return the first nonzero result; avoid integer subtraction, which can overflow and reverse the order. Use the same ordering for sorting and subsequent binary searches. `IEquatable<T>` serves equality-based operations and does not provide ordering.
+- **Verify / Trap:** Preserve transitivity, comparison sign symmetry, tie handling, and required sort stability. Sorted sets/dictionaries treat comparison result zero as key equivalence, so an order that omits identity fields can collapse distinct keys. Define floating-point NaN and string/culture semantics explicitly. Measure comparison counts, copies, dispatch, allocations, and whole-operation time under representative and adversarial input; do not assume typed interfaces guarantee inlining on every runtime.
+- **Reference:** [IComparable<T>](https://learn.microsoft.com/en-us/dotnet/api/system.icomparable-1).
