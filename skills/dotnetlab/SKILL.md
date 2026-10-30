@@ -1,6 +1,6 @@
 ---
 name: dotnetlab
-description: Use DotNetLab MCP for measured .NET performance optimization, EventPipe CPU/allocation/GC profiling, bottleneck localization, controlled C# experiments, JIT disassembly, spans and memory layout, SIMD, live ReJIT replacement, statistical comparison, and fresh-build confirmation.
+description: Use DotNetLab MCP for measured .NET performance optimization, EventPipe CPU/allocation/GC profiling, bottleneck localization, controlled C# experiments, JIT disassembly, spans and memory layout, SIMD, live ReJIT replacement, statistical comparison, fresh-build confirmation, and evidence-based performance pull request preparation.
 ---
 
 # DotNetLab — Scientific .NET Performance Engineering
@@ -29,6 +29,7 @@ Load **only** the file needed for your immediate phase or observed bottleneck:
 - **[MCP Loop & Profiling](references/mcp-loop.md)** — Connection, runtime matrix (`.NET 10+` controller, `.NET 6+` targets), scoped CLI grants, `lab.discover`, EventPipe capture/stack/GC analysis, hypotheses, 2-arm & $2\times 2$ factorial plans, `lab.run`, `lab.compare`, and `artifact_slice` paging.
 - **[Advanced Lab Workflows](references/advanced-lab.md)** — Fresh normal-build confirmation (`register_normal_build`, `start_confirmation`), individual operation latency & cluster-bootstrapped tail quantiles (`p50`/`p95`/`p99`), CLI fallback (`dotnetlab call`), and catalog/error recovery.
 - **[Native Disassembly, Probes & ReJIT](references/native-rejit.md)** — Live Tier 1 x64 disassembly (`lab.inspect` `native`/`offline_native`/`native_diff`/`il`), Windows live profiler attach, bounded method probes, live CIL ReJIT (`lab.patch`), A/A compilation controls, and taint recovery.
+- **[Performance Pull Requests](references/pull-requests.md)** — Prepare PR titles and descriptions from the final diff and verified measurements, including safety invariants, performance tables, validation, AI disclosure, and the user-confirmed manual-review attestation. Read when creating, revising, or reviewing a performance PR; PR preparation does not authorize publication or changes to PR state.
 
 ### C# & .NET Optimization Playbooks (Tier 2 — Load by Measured Bottleneck)
 - **[Algorithms, Lookups & Data Structures](references/playbooks/algorithms-and-lookups.md)** — Complexity cuts ($O(n^2)\to O(n)$), top-$k$, early-exit, stream fusion, PE `.rdata` span LUTs, `FrozenDictionary`, `GetAlternateLookup<ReadOnlySpan<char>>`, `CollectionsMarshal`, `SearchValues<T|string>`, bitmaps (`TrailingZeroCount` bit-walking), and RLE/delta compression.
