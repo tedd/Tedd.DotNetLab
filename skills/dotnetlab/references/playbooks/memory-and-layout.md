@@ -157,12 +157,15 @@ Targets allocation churn, GC pause pressure, redundant buffer copies, pointer ch
 ## 4. Hidden Allocations & GC Mark Cost
 
 ### `MEM-16` — Value-Type Enumerators & `ref readonly` Span Iteration
-- **Clue:** `foreach` over a collection typed as `IEnumerable<T>` / `IList<T>` / `ICollection<T>` (boxes the struct enumerator: one heap allocation per loop plus 2 interface calls per element), LINQ in hot loops, or `foreach (var item in list)` over wide structs (a full struct copy per element).
+- **Clue:** Interface-based enumeration, LINQ iterator chains such as `Enumerable.Index()` or indexed `Select`, capturing delegates in `List<T>.ForEach`, or copying wide structs in a hot loop. These can introduce iterator/closure allocation, boxing, dispatch, or copies; confirm which survive the target runtime's optimizations.
 - **C# Experiment:**
   - Type locals/parameters as the concrete collection (`List<T>`, `T[]`, `Dictionary<K,V>`) or as `ReadOnlySpan<T>` so `foreach` binds to the struct enumerator / span loop.
   - Iterate wide structs by reference: `foreach (ref readonly var item in CollectionsMarshal.AsSpan(list))` (or `ref var` to mutate in place).
   - Custom collections: expose `public Enumerator GetEnumerator()` returning a `struct` enumerator (and keep the interface implementation explicit).
-- **Verify / Trap:** `gc.gen0_collections` and `allocated_bytes_per_operation` should drop; `ref` iteration over `CollectionsMarshal.AsSpan` inherits all `MEM-07` mutation rules. For structs $\le 16$ bytes the copy is often free (registers)—verify the gain.
+  - When a measured hot loop needs an index, compare `list.Index()` / `list.Select((item, index) => ...)` against a direct `for` loop or `foreach` with a local counter. Preserve the index's meaning, filtering order, and useful work; indexed and non-indexed benchmarks must compute the same result.
+  - Compare `List<T>.ForEach` with a loop when delegate dispatch or captured state is material. A lambda capturing an accumulator can allocate per invocation of the enclosing operation; cached noncapturing delegates need not allocate per call. Ordinary `list[i]` access is distinct from LINQ `Index()` and does not inherently allocate.
+- **Verify / Trap:** Compare whole-operation time, allocations, and optimized caller code; no fixed span speedup or universal `for`/`foreach` ranking applies. List adds, removals, and indexer replacements invalidate its enumerator; mutating properties on referenced objects alone does not. `ref` iteration over `CollectionsMarshal.AsSpan` inherits all `MEM-07` mutation rules and bypasses version checks. For small structs, copies may disappear after inlining; measure on the target ABI before introducing byrefs.
+- **Reference:** [List iteration benchmark case study](https://khalidabuhakmeh.com/posts/how-to-loop-through-a-list-in-csharp/).
 
 ### `MEM-17` — `params ReadOnlySpan<T>` & `[InlineArray(N)]` Fixed Buffers
 - **Clue:** Hot calls to `params T[]` methods (`string.Concat`, logging helpers, `Path.Combine`, your own `Sum(params int[])`) allocate a hidden array on every call; small fixed-size scratch kept as `T[]` fields or `new T[4]` locals.
