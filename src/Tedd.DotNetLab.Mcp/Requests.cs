@@ -61,6 +61,7 @@ public record InspectNative(string TargetId,string MethodId,string ExpectedTarge
 [JsonDerivedType(typeof(RegisterQuantileHarnessRuns),"register_quantile_harness_runs")]
 [JsonDerivedType(typeof(CreateCompilationControl),"create_compilation_control")]
 [JsonDerivedType(typeof(CreateNativeTrial),"create_native_trial")]
+[JsonDerivedType(typeof(CreateLiveBenchmarkPlan),"create_live_benchmark_plan")]
 [JsonDerivedType(typeof(CreateNativeSeries),"create_native_series")]
 [JsonDerivedType(typeof(PrepareProfilerAttachment),"prepare_profiler_attachment")]
 public abstract record ExperimentRequest;
@@ -90,6 +91,8 @@ public record RegisterQuantileObservations(string PlanId,string ArtifactId) : Ex
 public record RegisterQuantileHarnessRuns(string PlanId,IReadOnlyList<QuantileRunPair> Blocks) : ExperimentRequest;
 public record CreateCompilationControl(string CandidateId,string ScenarioId,string HarnessVariant="baseline",int Blocks=10,int OperationsPerRun=1000,int WarmupBatches=1,int MaximumDurationSeconds=60) : ExperimentRequest;
 public record CreateNativeTrial(string CandidateId,string CompilationControlId,int Blocks=10,string Seed="42",int MaximumDurationSeconds=120) : ExperimentRequest;
+public record CreateLiveBenchmarkPlan(string TargetId,string ExpectedTargetEpoch,string ScenarioId,string Variant="baseline",LiveBenchmarkPolicy? Policy=null,
+    string? CalibrationResultId=null,string? MutationId=null,string? CompilationControlId=null,int MaximumDurationSeconds=120) : ExperimentRequest;
 public record CreateNativeSeries(IReadOnlyList<string> TrialPlanIds,AnalysisPolicy? Analysis=null,bool IndependentSessions=false,string IndependenceJustification="",
     string CarryoverJustification="",int MaximumDurationSeconds=300) : ExperimentRequest;
 public record CreateIndividualLatencyPlan(string ScenarioId,string ScenarioVersion,string InputHash,string Variant,int Operations=100,int WarmupBatches=1,int MaximumDurationSeconds=60,string? CompilationControlId=null,
@@ -130,7 +133,9 @@ public record CreateConfirmationPlan(string SelectedCandidateId,string SourcePat
 [JsonDerivedType(typeof(ReconcileProfilerAttachment),"reconcile_profiler_attachment")]
 [JsonDerivedType(typeof(StartJitDisasm),"capture_jit_disasm")]
 [JsonDerivedType(typeof(StartBenchmarkDotNet),"benchmarkdotnet")]
+[JsonDerivedType(typeof(StartLiveBenchmark),"live_benchmark")]
 public abstract record RunRequest;
+public record StartLiveBenchmark(string PlanId,string GrantId,string IdempotencyKey) : RunRequest;
 public record StartBenchmarkDotNet(string ExecutablePath,string GrantId,string IdempotencyKey,string Filter="*",string Job="default",int LaunchCount=2,int MaximumDurationSeconds=600) : RunRequest;
 public record StartProfilerAttachment(string PlanId,string GrantId,string IdempotencyKey) : RunRequest;
 public record ReconcileProfilerAttachment(string OperationId,string GrantId) : RunRequest;
@@ -185,6 +190,8 @@ public record RegisterNativeSeriesResults(string PlanId,IReadOnlyList<string> Re
 [JsonDerivedType(typeof(QueryJitMethods),"jit_methods")]
 [JsonDerivedType(typeof(QueryContentions),"contentions")]
 [JsonDerivedType(typeof(QueryJitDisasm),"jit_disasm")]
+[JsonDerivedType(typeof(QueryLiveBenchmarkSummary),"live_benchmark_summary")]
+[JsonDerivedType(typeof(QueryLiveBenchmarkComparison),"live_benchmark_comparison")]
 public abstract record QueryRequest;
 public record QueryRecord(string Id,string? Revision=null) : QueryRequest;
 public record QueryHistory(string Kind,int Limit=100,string? Cursor=null) : QueryRequest;
@@ -214,6 +221,8 @@ public record QueryJitInlining(string AnalysisId,string? Filter=null,bool Failur
 public record QueryJitMethods(string AnalysisId,string? Filter=null,int Limit=100,string? Cursor=null) : QueryRequest;
 public record QueryContentions(string AnalysisId,int Limit=100,string? Cursor=null) : QueryRequest;
 public record QueryJitDisasm(string ResultId,string? MethodSubstring=null,string? TierFilter=null,bool IncludeAsm=true,int MaxAsmChars=32768) : QueryRequest;
+public record QueryLiveBenchmarkSummary(IReadOnlyList<string> ResultIds) : QueryRequest;
+public record QueryLiveBenchmarkComparison(IReadOnlyList<string> BaselineResultIds,IReadOnlyList<string> CandidateResultIds) : QueryRequest;
 public record CompareRequest(string ExecutionId,bool NormalBuildConfirmation=false,bool IncludeObjectives=false,bool IncludeFactorial=false);
 
 public record InspectMethods(string ArtifactId,string Filter="",int Limit=100,string? Cursor=null) : InspectRequest;

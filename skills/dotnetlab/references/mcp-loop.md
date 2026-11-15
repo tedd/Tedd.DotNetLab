@@ -177,6 +177,17 @@ Freeze `create_plan` (`lab.experiment`) **before** executing candidate runs:
    - Inspect effect direction (lower is better for `ns_per_operation`; higher is better for throughput), confidence intervals, quality flags, reason codes, and allocation deltas (distinguishing process-wide vs thread-attributed allocations and preserving zero-allocation observations).
    - Update the hypothesis via `revise_hypothesis` with the resulting `comparison_id` in `evidence_ids`.
 
+## Calibrated live measurement loop
+
+Use `create_live_benchmark_plan` and `live_benchmark` for repeated measurements inside a running process with a registered synchronous scenario and a harness advertising `live-calibrated-batches/v1`. EventPipe profiles natural traffic; live calibration deliberately repeats the scenario and requires safe reset/validation hooks.
+
+1. Profile the target, select the registered scenario, and freeze `target_id`, `expected_target_epoch`, `scenario_id`, `variant`, and optional `policy` through `lab.experiment` action `create_live_benchmark_plan`.
+2. Run `lab.run` action `live_benchmark` with `plan_id`, a scoped `execute_registered_scenario` grant, and `idempotency_key`. Poll its operation to quiescence and retain its result and raw `artifact_id`.
+3. For ReJIT, use the verified original-body control for the baseline, apply the candidate through the existing patch workflow, and create a new plan at the resulting epoch with `mutation_id` and `compilation_control_id`. Supply the baseline result as `calibration_result_id` to keep batch sizes equal. Old plans fail after the target epoch changes.
+4. Query `live_benchmark_summary` with distinct `result_ids` to aggregate each compatible modification separately. Query `live_benchmark_comparison` with disjoint `baseline_result_ids` and `candidate_result_ids` for descriptive cost ratios and allocation deltas. Raw iterations remain available through `artifact_slice`; `history` lists `live_benchmark_plan` and `live_benchmark_result`.
+
+Review warmup convergence, drift, variability, short-iteration, and timer-floor warnings before choosing the next modification. Every group preserves per-run process/epoch/mutation provenance. Do not treat repeated batches as independent sessions, drop inconvenient runs, or treat `stable_live_observation` as a causal guarantee. Live comparisons have `promotion_eligible: false`; use randomized native trials and fresh normal builds for confirmation.
+
 ## 7. Autonomous Scratch-Benchmark Loop (`scaffold` + `grant-scratch`)
 
 Use a disposable scratch project to falsify a micro-mechanism quickly (e.g., "does the two-`ref` cursor drop the bounds check and win?") before touching the real application. Results are exploratory evidence; real changes still go through registered variants and [fresh normal-build confirmation](advanced-lab.md).

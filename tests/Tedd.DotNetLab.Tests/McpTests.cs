@@ -98,6 +98,10 @@ public sealed class McpTests
             Assert.DoesNotContain('"'+action+'"',schemas);
         Assert.Contains("register_compiled_candidate",schemas);
         Assert.Contains("benchmarkdotnet",schemas);
+        Assert.Contains("create_live_benchmark_plan",schemas);
+        Assert.Contains("live_benchmark_summary",schemas);
+        Assert.Contains("live_benchmark_comparison",schemas);
+        Assert.Contains("\"live_benchmark\"",schemas);
         Assert.IsType<PrepareDeletion>(Wire.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}"));
         Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}",McpCatalog.Json));
     }

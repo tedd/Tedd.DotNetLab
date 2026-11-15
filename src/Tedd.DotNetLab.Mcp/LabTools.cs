@@ -88,7 +88,7 @@ public sealed class LabTools(LabService service)
         _=>throw new LabException("invalid_request","Invalid inspection action.")
     });
 
-        [Description("Create or revise hypotheses and work items; register immutable candidate metadata and plans; record manual decisions separately from engine evidence.")]
+        [Description("Create or revise hypotheses and work items; register immutable candidate metadata and plans, including calibrated live benchmarks bound to a target epoch and modification; record manual decisions separately from engine evidence.")]
     public Task<LabResponse> Experiment(ExperimentRequest request)=>Respond(async()=>request switch
     {
         PrepareProfilerAttachment attach=>service.PrepareProfilerAttachment(attach.TargetId,Integer(attach.ExpectedTargetEpoch)),
@@ -113,6 +113,7 @@ public sealed class LabTools(LabService service)
         RegisterQuantileHarnessRuns runs=>await service.RegisterQuantileHarnessRunsAsync(runs.PlanId,runs.Blocks),
         CreateCompilationControl control=>await service.CreateCompilationControlAsync(control.CandidateId,control.ScenarioId,control.HarnessVariant,control.Blocks,control.OperationsPerRun,control.WarmupBatches,control.MaximumDurationSeconds),
         CreateNativeTrial trial=>await service.CreateNativeTrialAsync(trial.CandidateId,trial.CompilationControlId,trial.Blocks,ulong.Parse(trial.Seed,CultureInfo.InvariantCulture),trial.MaximumDurationSeconds),
+        CreateLiveBenchmarkPlan live=>await service.CreateLiveBenchmarkPlanAsync(live.TargetId,Integer(live.ExpectedTargetEpoch),live.ScenarioId,live.Variant,live.Policy,live.CalibrationResultId,live.MutationId,live.CompilationControlId,live.MaximumDurationSeconds),
         CreateNativeSeries series=>await service.CreateNativeSeriesAsync(series.TrialPlanIds,series.Analysis,series.IndependentSessions,series.IndependenceJustification,series.CarryoverJustification,series.MaximumDurationSeconds),
         CreateIndividualLatencyPlan latency=>service.CreateIndividualLatencyPlan(latency.ScenarioId,latency.ScenarioVersion,latency.InputHash,latency.Variant,latency.Operations,latency.WarmupBatches,latency.MaximumDurationSeconds,latency.CompilationControlId,latency.TargetRuntimeVersion),
         CreateWorkItem work=>service.WorkItem(work.Question,work.Priority,work.Dependencies,work.EvidenceIds),
@@ -141,7 +142,7 @@ public sealed class LabTools(LabService service)
         _=>throw new LabException("invalid_request","Invalid patch action.")
     });
 
-        [Description("Start an authorized capture or frozen scenario plan; poll, cancel, or stop by operation ID. Issue scoped grants through the local CLI within the authorized task; manual approval is optional.")]
+        [Description("Start an authorized capture, frozen scenario plan, calibrated live benchmark, or isolated BenchmarkDotNet job; poll, cancel, or stop by operation ID. Issue scoped grants through the local CLI within the authorized task; manual approval is optional.")]
     public Task<LabResponse> Run(RunRequest request)=>Respond(async()=>request switch
     {
         StartProfilerAttachment attach=>service.StartProfilerAttachment(attach.PlanId,attach.GrantId,attach.IdempotencyKey),
@@ -170,10 +171,11 @@ public sealed class LabTools(LabService service)
         RegisterNativeSeriesResults series=>service.StartNativeSeriesRegistration(series.PlanId,series.ResultIds,series.IdempotencyKey),
         StartJitDisasm disasm=>service.StartJitDisasm(disasm.MethodFilter,disasm.ScenarioId,disasm.Variant,disasm.GrantId,disasm.IdempotencyKey,disasm.BuildId,disasm.ExecutablePath,disasm.Operations,disasm.WarmupBatches,disasm.TieredPgo,disasm.MaximumDurationSeconds),
         StartBenchmarkDotNet benchmark=>service.StartBenchmarkDotNet(benchmark.ExecutablePath,benchmark.GrantId,benchmark.IdempotencyKey,benchmark.Filter,benchmark.Job,benchmark.LaunchCount,benchmark.MaximumDurationSeconds),
+        StartLiveBenchmark live=>await service.StartLiveBenchmarkAsync(live.PlanId,live.GrantId,live.IdempotencyKey),
         _=>throw new LabException("invalid_request","Invalid run action.")
     });
 
-        [Description("Read bounded retained evidence, metrics, notebook history, GC timelines, counters, or artifact slices. Missing metrics return typed availability.")]
+        [Description("Read bounded retained evidence, metrics, notebook history, GC timelines, counters, or artifact slices. Aggregate live benchmark results per modification or compare compatible selections descriptively. Missing metrics return typed availability.")]
     public Task<LabResponse> Query(QueryRequest request)=>Respond(async()=>request switch
     {
         QueryRecord record=>service.Catalog.Get(record.Id,Revision(record.Revision)),
@@ -195,6 +197,8 @@ public sealed class LabTools(LabService service)
         QuerySampledMethod method=>await service.SampledMethodAsync(method.ResultId,method.Selector),
         QueryIndividualLatencies latency=>await service.IndividualLatencySliceAsync(latency.RunId,latency.Offset,latency.Count),
         QueryNativeTrial trial=>await service.VerifyNativeTrialAsync(trial.ResultId),
+        QueryLiveBenchmarkSummary live=>await service.AggregateLiveBenchmarksAsync(live.ResultIds),
+        QueryLiveBenchmarkComparison live=>await service.CompareLiveBenchmarksAsync(live.BaselineResultIds,live.CandidateResultIds),
         QueryNativeSeries series=>await service.ReadNativeSeriesComparisonAsync(series.ResultId),
         QueryJitInlining inlining=>await JitInlining(inlining),
         QueryJitMethods methods=>await JitMethods(methods),
@@ -268,7 +272,7 @@ public sealed class LabTools(LabService service)
     private object History(QueryHistory request)
     {
         if(!new[]{"hypothesis","candidate","plan","execution","run","comparison","work_item","decision","capture","analysis","baseline","baseline_alias","analysis_failure",
-            "normal_build","confirmation_plan","confirmation_execution","normal_build_session","confirmation_decision","objective_vector","factorial_comparison","execution_window","export_plan","export_result","bundle_import_plan","bundle_import_result","imported_evidence_member","controller_resource_snapshot","controller_resource_unavailable","deletion_plan","deletion_result","artifact_recovery","catalog_backup","reference_release_plan","reference_release_result","stack_analysis","stack_analysis_failure","quantile_plan","quantile_dataset","quantile_comparison","individual_latency_plan","individual_latency_run","compilation_control_plan","compilation_control_measurement","compilation_control_result","native_trial_plan","native_trial_run","native_trial_result","native_series_plan","native_series_dataset","native_series_comparison","jit_disasm_result","benchmarkdotnet_result"}.Contains(request.Kind))
+            "normal_build","confirmation_plan","confirmation_execution","normal_build_session","confirmation_decision","objective_vector","factorial_comparison","execution_window","export_plan","export_result","bundle_import_plan","bundle_import_result","imported_evidence_member","controller_resource_snapshot","controller_resource_unavailable","deletion_plan","deletion_result","artifact_recovery","catalog_backup","reference_release_plan","reference_release_result","stack_analysis","stack_analysis_failure","quantile_plan","quantile_dataset","quantile_comparison","individual_latency_plan","individual_latency_run","compilation_control_plan","compilation_control_measurement","compilation_control_result","native_trial_plan","native_trial_run","native_trial_result","native_series_plan","native_series_dataset","native_series_comparison","jit_disasm_result","benchmarkdotnet_result","live_benchmark_plan","live_benchmark_result"}.Contains(request.Kind))
             throw new LabException("invalid_request","Unknown notebook/evidence view.");
         return service.Catalog.List(request.Kind,request.Limit,request.Cursor,includeOversizedFirst:true);
     }

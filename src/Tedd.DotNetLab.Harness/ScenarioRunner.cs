@@ -118,11 +118,33 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
             else { nativeLease?.Dispose(); lease.Release(); }
         }
     }
-    public async Task<Measurement> ExecuteAsync(RunRequest request,CancellationToken cancellation)
+    public Task<Measurement> ExecuteAsync(RunRequest request,CancellationToken cancellation) =>
+        ExecuteCoreAsync(request,cancellation,(scenario,descriptor,token) => scenario is ISynchronousScenario sync
+            ? DispatchSync(() => RunSync(sync,request,token),descriptor,token)
+            : RunAsync((IAsynchronousScenario)scenario,request,token),
+            result => new(result.Correct,result.Failure,result.Quiescent));
+
+    public Task<LiveBenchmarkSession> BenchmarkAsync(RunRequest request,LiveBenchmarkPolicy policy,CancellationToken cancellation)
+    {
+        policy.Validate();
+        return ExecuteCoreAsync(request,cancellation,(scenario,descriptor,token) =>
+        {
+            if(scenario is not ISynchronousScenario sync || descriptor.IsAsync || descriptor.ResetLevel==ResetLevel.FreshProcess || request.RetainIndividualLatencies)
+                throw new LabException("capability_unsupported","Live calibration requires a synchronous repeatable scenario without fresh-process resets or individual-latency instrumentation.");
+            return DispatchSync(() => LiveBenchmarkRunner.Run(sync,request,policy,token),descriptor,token);
+        },result => new(result.Correct,result.Failure,result.Quiescent),retainFailure:true);
+    }
+
+    private Task<T> DispatchSync<T>(Func<T> action,ScenarioDescriptor descriptor,CancellationToken token) =>
+        descriptor.Affinity==ThreadAffinity.ApplicationThread
+            ? applicationDispatcher!.DispatchAsync(action,token) : Task.Run(action,CancellationToken.None);
+
+    private async Task<T> ExecuteCoreAsync<T>(RunRequest request,CancellationToken cancellation,
+        Func<object,ScenarioDescriptor,CancellationToken,Task<T>> execute,Func<T,ValidationResult> validate,bool retainFailure=false)
     {
         Authorize(request);
         if (!await lease.WaitAsync(0,cancellation)) throw new LabException("lease_conflict","Target harness is executing.");
-        Task<Measurement>? work = null;
+        Task<T>? work = null;
         IDisposable? nativeLease=null;
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(request.Deadline-DateTimeOffset.UtcNow);
@@ -143,26 +165,25 @@ public sealed class ScenarioRunner(ScenarioRegistry registry, TargetIdentity tar
                 throw new LabException("capability_unsupported","Async application-thread dispatch is not qualified.");
             grantUses.AddOrUpdate(request.Grant.Id,1,(_,old) =>
                 old >= request.Grant.MaximumOperations ? throw new LabException("permission_denied","Target grant budget exhausted.") : old+1);
-            if (scenario is ISynchronousScenario sync)
-            {
-                // Dispatch outside the timed synchronous fast path.
-                work = descriptor.Affinity == ThreadAffinity.ApplicationThread
-                    ? applicationDispatcher!.DispatchAsync(() => RunSync(sync,request,deadline.Token),deadline.Token)
-                    : Task.Run(() => RunSync(sync,request,deadline.Token),CancellationToken.None);
-            }
-            else work = RunAsync((IAsynchronousScenario)scenario,request,deadline.Token);
+            work = execute(scenario,descriptor,deadline.Token);
             try
             {
                 var result = await work.WaitAsync(deadline.Token);
-                if (!result.Quiescent) { tainted = true; throw new LabException("target_tainted","Scenario reports unjoined application work."); }
-                if (!result.Correct) throw new LabException("scenario_failed",result.Failure ?? "Correctness failed.");
+                var validation = validate(result);
+                if (!validation.Quiescent) { tainted = true; if(!retainFailure) throw new LabException("target_tainted","Scenario reports unjoined application work."); }
+                if (!validation.Correct&&!retainFailure) throw new LabException("scenario_failed",validation.Reason ?? "Correctness failed.");
                 return result;
             }
             catch (OperationCanceledException)
             {
                 try
                 {
-                    await work.WaitAsync(TimeSpan.FromSeconds(2));
+                    var cancelledResult = await work.WaitAsync(TimeSpan.FromSeconds(2));
+                    if(retainFailure)
+                    {
+                        if(!validate(cancelledResult).Quiescent) tainted=true;
+                        return cancelledResult;
+                    }
                     throw new LabException("scenario_failed","Execution deadline/cancellation ended the run.");
                 }
                 catch (TimeoutException)

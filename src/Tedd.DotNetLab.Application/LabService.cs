@@ -377,7 +377,7 @@ public sealed partial class LabService : IAsyncDisposable
             Catalog.Transition(operation.Id,OperationState.Running);
             job.Work=Task.Run(async()=>
             {
-                bool quiescent=kind is not ("execution" or "mutation" or "mutation_recovery" or "individual_latencies" or "profiler_attach");
+                bool quiescent=kind is not ("execution" or "mutation" or "mutation_recovery" or "individual_latencies" or "live_benchmark" or "profiler_attach");
                 try { RecordControllerResources(operation.Id,"before",true); quiescent=await action(operation,job.Cancellation.Token); }
                 catch(Exception e) when(e is not OutOfMemoryException)
                 {
@@ -386,7 +386,7 @@ public sealed partial class LabService : IAsyncDisposable
                         Catalog.Put(operation.Id+"-failure","stack_analysis_failure",new { code,error_type=e.GetType().Name,
                             message=e.Message.Length>4096?e.Message[..4096]:e.Message });
                     if(!Lifecycle.Terminal(Catalog.GetOperation(operation.Id).State))
-                        Catalog.Transition(operation.Id,kind is "execution" or "mutation" or "mutation_recovery" or "individual_latencies" or "profiler_attach"?OperationState.Tainted:OperationState.Failed,error:code);
+                        Catalog.Transition(operation.Id,kind is "execution" or "mutation" or "mutation_recovery" or "individual_latencies" or "live_benchmark" or "profiler_attach"?OperationState.Tainted:OperationState.Failed,error:code);
                 }
                 finally
                 {

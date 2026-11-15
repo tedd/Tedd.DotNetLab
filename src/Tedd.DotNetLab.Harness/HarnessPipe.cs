@@ -7,10 +7,10 @@ using Tedd.DotNetLab.Transport.Local;
 
 namespace Tedd.DotNetLab.Harness;
 
-public record HarnessControl(string SchemaVersion,string Action,TargetIdentity Target,RunRequest? Run = null,ProbeControl? Probe=null);
+public record HarnessControl(string SchemaVersion,string Action,TargetIdentity Target,RunRequest? Run = null,ProbeControl? Probe=null,LiveBenchmarkPolicy? Benchmark=null);
 public record HarnessReply(string SchemaVersion,string Status,JsonElement? Payload,string? Code,string? Message);
 public record HarnessHandshake(TargetIdentity Target,IReadOnlyList<ScenarioDescriptor> Scenarios,bool Tainted,ProbeHelperDescriptor? ProbeHelper=null,
-    RuntimeFootprint? Runtime=null);
+    RuntimeFootprint? Runtime=null,string? LiveBenchmarkProtocol=null);
 public sealed class HarnessHost
 {
     private readonly TargetIdentity initialTarget;
@@ -81,6 +81,7 @@ public sealed class HarnessHost
                 if (command.SchemaVersion != Wire.Version) throw new LabException("schema_unsupported","Unsupported harness protocol.");
                 if (command.Target.Id != Target.Id || command.Target.StartTimeUtcTicks != Target.StartTimeUtcTicks)
                     throw new LabException("target_identity_changed","Handshake identity differs.");
+                if(command.Benchmark is not null&&command.Action!="benchmark") throw new LabException("invalid_request","Benchmark policy requires the benchmark action.");
                 if(command.Action=="mutation_boundary"&&command.Run is not null&&command.Probe is null)
                 {
                     deadline.CancelAfter(command.Run.Deadline-DateTimeOffset.UtcNow);
@@ -94,7 +95,8 @@ public sealed class HarnessHost
                 }
                 object response = command.Action switch
                 {
-                    "handshake" when command.Run is null&&command.Probe is null => new HarnessHandshake(Target,registry.Describe(),runner.Tainted,probes?.Describe(),FootprintReader.Read() with { OwnedProcess=ownsProcess }),
+                    "handshake" when command.Run is null&&command.Probe is null => new HarnessHandshake(Target,registry.Describe(),runner.Tainted,probes?.Describe(),FootprintReader.Read() with { OwnedProcess=ownsProcess },LiveBenchmarkRunner.Protocol),
+                    "benchmark" when command.Run is not null&&command.Probe is null&&command.Benchmark is not null => await RunBenchmarkAsync(pipe,command.Run,command.Benchmark,deadline.Token),
                     "execute" when command.Run is not null&&command.Probe is null => await runner.ExecuteAsync(command.Run,deadline.Token),
                     "mutation_setup" when command.Run is not null&&command.Probe is null => await runner.SetupAsync(command.Run,deadline.Token),
                     "probe_control" when command.Run is null&&command.Probe is not null => await runner.ControlAsync(
@@ -110,6 +112,26 @@ public sealed class HarnessHost
             }
             catch (Exception e) when (e is IOException or OperationCanceledException or JsonException) { }
         }
+    }
+
+    private async Task<LiveBenchmarkSession> RunBenchmarkAsync(NamedPipeServerStream pipe,RunRequest request,LiveBenchmarkPolicy policy,CancellationToken cancellation)
+    {
+        using var runCancellation=CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        using var monitorCancellation=CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        async Task MonitorAsync()
+        {
+            try
+            {
+                byte[] signal=new byte[1];
+                await pipe.ReadExactlyAsync(signal,monitorCancellation.Token);
+                runCancellation.Cancel(); // Cancellation byte or controller disconnect.
+            }
+            catch(OperationCanceledException) when(monitorCancellation.IsCancellationRequested) { }
+            catch(IOException) { runCancellation.Cancel(); }
+        }
+        var monitor=MonitorAsync();
+        try { return await runner.BenchmarkAsync(request,policy,runCancellation.Token); }
+        finally { monitorCancellation.Cancel(); await monitor; }
     }
 }
 public sealed class HarnessClient
@@ -146,6 +168,8 @@ public sealed class HarnessClient
         await SendAsync<HarnessHandshake>(target,new(Wire.Version,"handshake",target),cancellation);
     public async Task<Measurement> ExecuteAsync(RunRequest run,CancellationToken cancellation) =>
         await SendAsync<Measurement>(run.Target,new(Wire.Version,"execute",run.Target,run),cancellation);
+    public async Task<LiveBenchmarkSession> BenchmarkAsync(RunRequest run,LiveBenchmarkPolicy policy,CancellationToken cancellation) =>
+        await SendAsync<LiveBenchmarkSession>(run.Target,new(Wire.Version,"benchmark",run.Target,run,Benchmark:policy),cancellation);
     public async Task<ValidationResult> SetupAsync(RunRequest run,CancellationToken cancellation)=>
         await SendAsync<ValidationResult>(run.Target,new(Wire.Version,"mutation_setup",run.Target,run),cancellation);
     public async Task<System.Text.Json.JsonElement> ProbeAsync(TargetIdentity target,ProbeControl request,CancellationToken cancellation)=>
@@ -165,7 +189,34 @@ public sealed class HarnessClient
         try
         {
         await Frames.WriteAsync(pipe,command,cancellation);
-        var response = await Frames.ReadAsync<HarnessReply>(pipe,cancellation);
+        HarnessReply response;
+        if(command.Action=="benchmark")
+        {
+            using var responseDeadline=new CancellationTokenSource();
+            var remaining=command.Run!.Deadline-DateTimeOffset.UtcNow+TimeSpan.FromSeconds(5);
+            responseDeadline.CancelAfter(remaining>TimeSpan.Zero?remaining:TimeSpan.Zero);
+            var reply=Frames.ReadAsync<HarnessReply>(pipe,responseDeadline.Token);
+            var cancelled=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var registration=cancellation.Register(()=>cancelled.TrySetResult());
+            try
+            {
+                if(await Task.WhenAny(reply,cancelled.Task)==cancelled.Task)
+                {
+                    using var stopDeadline=new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    await pipe.WriteAsync(new byte[]{1},stopDeadline.Token);
+                    response=await reply.WaitAsync(stopDeadline.Token);
+                }
+                else response=await reply;
+            }
+            finally
+            {
+                responseDeadline.Cancel();
+                // Observe a pending read even when cancellation acknowledgement times out.
+                try { await reply; }
+                catch(Exception error) when(error is IOException or OperationCanceledException or JsonException) { }
+            }
+        }
+        else response = await Frames.ReadAsync<HarnessReply>(pipe,cancellation);
         if (response.SchemaVersion != Wire.Version) throw new LabException("schema_unsupported","Harness replied with unsupported schema.");
         if (response.Status != "ok") throw new LabException(response.Code ?? "scenario_failed",response.Message ?? "Harness failed.");
         if(response.Payload is null) throw new LabException("invalid_harness_response","Harness success response has no payload.");

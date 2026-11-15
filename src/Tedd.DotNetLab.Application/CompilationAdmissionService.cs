@@ -71,7 +71,7 @@ public sealed partial class LabService
         return new(result,plan,candidate,Wire.Hash(rows[0].Runtime));
     }
     private async Task<CompilationRegimeEvidence?> CompilationRegimeAsync(TargetIdentity target,RuntimeFootprint? runtime,ExperimentPlan plan,
-        ScenarioDescriptor scenario,VerifiedCompilationControl? control,CancellationToken cancellation)
+        ScenarioDescriptor scenario,VerifiedCompilationControl? control,CancellationToken cancellation,bool calibratedLive=false)
     {
         if(runtime?.NativeProfilerPresent!=true)
         {
@@ -94,7 +94,7 @@ public sealed partial class LabService
                 Wire.Hash(control.Candidate.Inliners??[])!=Wire.Hash(callers)||flags!=control.Plan.RejitRequestFlags||!state.GetProperty("compilation_observed").GetBoolean()||
                 !state.GetProperty("correctness_passed").GetBoolean()||!(scenario.MutationScopes?.Contains(methodScope)??false)||
                 control.Plan.ScenarioId!=plan.ScenarioId||control.Plan.InputHash!=plan.InputHash||control.Plan.ScenarioVersion!=plan.ScenarioVersion||
-                control.Plan.OperationsPerRun!=plan.OperationsPerRun||control.Plan.WarmupBatches!=plan.WarmupBatches||target.Epoch<=control.Result.RestoredEpoch)
+                !calibratedLive&&(control.Plan.OperationsPerRun!=plan.OperationsPerRun||control.Plan.WarmupBatches!=plan.WarmupBatches)||target.Epoch<=control.Result.RestoredEpoch)
                 throw new LabException("control_mismatch","Live method/caller, flags, session, observer, or workload differs from the frozen compilation control.");
         }
         else if(regime is not ("original_normal_compile" or "restored_original_version" or "selected_probe"))

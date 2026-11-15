@@ -11,7 +11,7 @@ Ad-hoc CLI benchmarks mix process startup, JIT tiering, warmup, GC residue, and 
 1. **`Describe()`** — Declares stable scenario ID, version, deterministic `InputHash`, variants (for example `["baseline", "candidate"]`), and thread affinity.
 2. **`Prepare(context)`** — Allocates or loads fixture state for the selected variant outside the measured clock.
 3. **`Reset(context)`** — Resets per-batch or per-block mutable state outside the measured clock.
-4. **`ExecuteBatch(operationCount)`** — Runs `operationCount` operations inside the controller's synchronized Stopwatch + thread/process allocation window and returns a deterministic checksum/work token.
+4. **`ExecuteBatch(operationCount)`** — Runs `operationCount` operations inside the target's timing and allocation window and returns the completed operation count. Retain computed outputs for the correctness oracle.
 5. **`Validate()`** — Runs a semantic correctness oracle outside the timer. Any failed validation automatically blocks statistical comparison and candidate promotion.
 6. **`Cleanup()`** — Releases scenario buffers cleanly.
 
@@ -47,6 +47,42 @@ The project also supports direct BenchmarkDotNet CLI use:
 dotnet run --project D:\Workspaces\AI\sum-benchmark\ScratchBench.csproj -c Release -- --filter "*" --disasm
 ```
 
+## Calibrated measurements in a running process
+
+`live_benchmark` runs a repeatable synchronous scenario through a persistent `HarnessHost.ListenAsync` listener. The target must advertise `live-calibrated-batches/v1` in its handshake. EventPipe can locate hot paths in accessible running processes; calibrated execution also requires a compatible cooperative harness and a registered scenario. Existing hosts with an older harness must load the compatible version before using this protocol. Async and fresh-process scenarios use their existing execution paths.
+
+The harness doubles the pilot batch size until it reaches the target duration or operation limit, confirms a qualifying pilot duration, checks warmup convergence, evaluates an empty-call timer floor, and collects the frozen number of actual iterations. Defaults are a 20 ms target, 6–40 warmup batches, and 15 actual batches. `Prepare` and `Cleanup` run once; every workload batch receives `Reset` and `Validate` outside its timed interval. A synchronous application-thread scenario runs the entire lifecycle through its dispatcher and can occupy that thread for the session duration.
+
+Create a plan through `lab.experiment`, then execute it with an `execute_registered_scenario` grant:
+
+```json
+{"request":{"action":"create_live_benchmark_plan","target_id":"target-id","expected_target_epoch":"0","scenario_id":"parse-orders","variant":"baseline","maximum_duration_seconds":120}}
+```
+
+```json
+{"request":{"action":"live_benchmark","plan_id":"live-plan-id","grant_id":"grant-id","idempotency_key":"parse-baseline-1"}}
+```
+
+Poll `lab.run` action `status`; read the returned result with `lab.query` view `record`. For the candidate plan, supply the baseline's `result_id` as `calibration_result_id`. This freezes the same operations per iteration for both implementations. The reference must come from the same process session, runtime, and scenario inputs. Optional `policy` fields bound per-iteration and total operations, warmup, sample count, target duration, variability, and drift. Freeze these choices before collecting candidate measurements.
+
+For an active ReJIT body, the plan also requires its verified `mutation_id` and `compilation_control_id`. Measure the original-body-ReJIT baseline and candidate-ReJIT under the same completed A/A compilation control. Retain the epoch returned by each apply or restore; an intervening mutation invalidates an older plan. Existing native qualification and method/caller restrictions apply. The target holds its execution and native coordination leases across the entire session. Coordinated patches therefore cannot cross an active measurement window.
+
+Query selected runs through `lab.query`:
+
+```json
+{"request":{"view":"live_benchmark_summary","result_ids":["baseline-result","candidate-result-1","candidate-result-2"]}}
+```
+
+```json
+{"request":{"view":"live_benchmark_comparison","baseline_result_ids":["baseline-result"],"candidate_result_ids":["candidate-result-1","candidate-result-2"]}}
+```
+
+Each immutable result binds the scenario/input, process start, epoch, variant, native candidate/body hashes, mutation transaction, compilation evidence, and frozen policy. Its sealed `artifact_id` retains exact ticks, completed work, allocations, telemetry, and ordered pilot/warmup/overhead/actual iterations, including partial sessions returned after failure or acknowledged cancellation. `artifact_slice` reads the raw report; `history` accepts `live_benchmark_plan` and `live_benchmark_result`. Evidence remains queryable after controller restart.
+
+Summaries group compatible results by modification and give each complete run equal weight. Reapplying the same candidate can share a group while `observations` preserves each transaction and epoch. Different policies or calibrated batch sizes form separate groups; comparison rejects incompatible groups, overlapping selections, and duplicate result IDs. Failed or invalid runs remain retained but cannot enter aggregates.
+
+Use mean/median batch cost, variability, drift, timer-floor warnings, and allocation/telemetry deltas to guide the next experiment. The empty-call floor excludes workload-owned loops and is not subtracted. Process-wide allocation and GC counters include concurrent activity. Same-process iterations share tiering, PGO, and environmental history: live comparisons are descriptive and have `promotion_eligible: false`. Use randomized native trials and fresh normal-build confirmation for adoption decisions; use isolated BenchmarkDotNet jobs when process isolation is required.
+
 ## Minimal Synchronous Scenario Example
 
 Reference `Tedd.DotNetLab.Harness` (and optionally `Tedd.DotNetLab.Probes` if using startup method probes) in your benchmark or workload host:
@@ -60,14 +96,17 @@ public sealed class ParseOrdersScenario : ISynchronousScenario
     private byte[] _payload = [];
     private string _variant = "baseline";
     private long _lastChecksum;
+    private int _completed;
 
     public ScenarioDescriptor Describe() => new(
         Id: "parse-orders",
         Version: "1",
         InputHash: Wire.Hash(new { rows = 1024, encoding = "utf8" }),
+        ResetLevel: ResetLevel.LogicalState,
         Variants: ["baseline", "span-parser"],
         IsAsync: false,
-        ThreadAffinity: ThreadAffinity.Any);
+        Affinity: ThreadAffinity.Any,
+        CompletedWorkDefinition: "One parsed payload");
 
     public void Prepare(ScenarioContext context)
     {
@@ -87,13 +126,14 @@ public sealed class ParseOrdersScenario : ISynchronousScenario
                 : OrderParserBaseline.SumQuantities(_payload);
         }
         _lastChecksum = total;
-        return total;
+        _completed = operationCount;
+        return _completed;
     }
 
     public ValidationResult Validate()
     {
-        long expected = 524_800L * 1; // Known deterministic oracle for 1 batch op or scaled check
-        bool ok = _lastChecksum > 0;
+        long expected = 524_800L * _completed; // Fixture contains quantities 1 through 1024.
+        bool ok = _lastChecksum == expected;
         return new ValidationResult(ok, ok ? null : "Parsed quantity checksum mismatched oracle.");
     }
 
@@ -103,7 +143,7 @@ public sealed class ParseOrdersScenario : ISynchronousScenario
 
 ### Exposing the Persistent Harness Listener (`ListenAsync`)
 
-For interactive exploratory experiments (`lab.run` action `start` or `individual_latencies`), start `HarnessHost.ListenAsync`:
+For interactive exploratory experiments (`lab.run` action `start`, `live_benchmark`, or `individual_latencies`), start `HarnessHost.ListenAsync`:
 
 ```csharp
 var registry = new ScenarioRegistry();
