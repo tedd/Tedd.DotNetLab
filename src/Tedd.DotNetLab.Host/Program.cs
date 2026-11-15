@@ -74,21 +74,23 @@ try
     }
     if(args.Length>0&&args[0]=="scaffold")
     {
-        if(args.Length<2||args.Length>5)
-            throw new LabException("invalid_request","Usage: dotnetlab scaffold <output-dir> [--scenario <id>] [--force]");
+        if(args.Length<2||args.Length>7)
+            throw new LabException("invalid_request","Usage: dotnetlab scaffold <output-dir> [--scenario <id>] [--engine harness|benchmarkdotnet] [--force]");
         string outputDir=args[1];
         string scenarioId="scratch-bench";
+        string engine="harness";
         bool force=false;
         for(int i=2;i<args.Length;i++)
         {
             if(args[i]=="--force") force=true;
             else if(args[i]=="--scenario"&&i+1<args.Length) scenarioId=args[++i];
-            else throw new LabException("invalid_request","Usage: dotnetlab scaffold <output-dir> [--scenario <id>] [--force]");
+            else if(args[i]=="--engine"&&i+1<args.Length) engine=args[++i];
+            else throw new LabException("invalid_request","Usage: dotnetlab scaffold <output-dir> [--scenario <id>] [--engine harness|benchmarkdotnet] [--force]");
         }
-        Console.WriteLine(Wire.Serialize(ScaffoldService.Create(outputDir,scenarioId,force)));
+        Console.WriteLine(Wire.Serialize(ScaffoldService.Create(outputDir,scenarioId,force,engine)));
         return;
     }
-    if(args.Length<2) throw new LabException("invalid_request","Usage: dotnetlab <install|uninstall> [all|codex|claude|cursor|antigravity] [options] | scaffold <output-dir> [--scenario <id>] [--force] | compatibility | profiles | schema <name> | <init|serve|connect|call|backup|checkpoint|grant|grant-scratch|grant-build|grant-profiler-attach|grant-cil|grant-confirmation|grant-export|grant-deletion|grant-release|capture|import> <workspace> [arguments]");
+    if(args.Length<2) throw new LabException("invalid_request","Usage: dotnetlab <install|uninstall> [all|codex|claude|cursor|antigravity] [options] | scaffold <output-dir> [--scenario <id>] [--engine harness|benchmarkdotnet] [--force] | compatibility | profiles | schema <name> | <init|serve|connect|call|backup|checkpoint|grant|grant-scratch|grant-build|grant-profiler-attach|grant-cil|grant-confirmation|grant-export|grant-deletion|grant-release|capture|import> <workspace> [arguments]");
     if(args[0]=="serve"&&(args.Length is not (2 or 3)||args.Length==3&&args[2]!="--enable-native-extension"))
         throw new LabException("invalid_request","Usage: dotnetlab serve <workspace> [--enable-native-extension]");
     string command=args[0],workspace=args[1];

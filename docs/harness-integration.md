@@ -17,6 +17,36 @@ Ad-hoc CLI benchmarks mix process startup, JIT tiering, warmup, GC residue, and 
 
 ---
 
+## BenchmarkDotNet microbenchmarks
+
+Use BenchmarkDotNet for isolated, repeatable method benchmarks. It controls pilot calibration, overhead evaluation, warmup, and repeated measurement iterations. The generated project targets .NET 10 and requires an SDK and NuGet access for its initial build.
+
+```powershell
+dotnetlab scaffold D:\Workspaces\AI\sum-benchmark --engine benchmarkdotnet
+dotnet build D:\Workspaces\AI\sum-benchmark\ScratchBench.csproj -c Release
+dotnetlab grant-scratch D:\Workspaces\AI\sum-lab D:\Workspaces\AI\sum-benchmark 900 2
+```
+
+Replace the generated `Baseline` and `Candidate` methods with representative work. Each `[Benchmark]` invocation performs one operation and returns its result. `GlobalSetup` prepares inputs and checks both implementations against an independent oracle outside timed work. Benchmarks must tolerate repeated invocations; mutable state requiring resets needs an explicit BenchmarkDotNet lifecycle design.
+
+Pass the returned execute grant to `lab.run`:
+
+```json
+{"request":{"action":"benchmarkdotnet","executable_path":"D:\\Workspaces\\AI\\sum-benchmark\\bin\\Release\\net10.0\\ScratchBench.dll","grant_id":"grant-id","idempotency_key":"sum-bdn-1","filter":"*","job":"default","launch_count":2,"maximum_duration_seconds":600}}
+```
+
+Poll `lab.run` action `status` with the operation ID, then read its `result_id` through `lab.query` view `record`. Results include mean, median, standard deviation, standard error, BenchmarkDotNet's confidence interval, observed launch and sample counts, allocated bytes per operation, and GC counts with their operation denominator. Full JSON retains pilot, overhead, warmup, and workload observations; CSV measurement exports and generated build files remain on disk. `artifact_ids` exposes sealed JSON reports and process logs through `artifact_slice`. Failed runs retain logs and any reports produced.
+
+`job` accepts `default`, `short`, or `dry`. Use `default` for measurements, `short` for exploration, and `dry` for execution checks. The duration budget covers waiting for the machine measurement lock, build, and execution. Failed jobs do not produce eligible measurements. Keep the benchmark source directory and the result's `evidence_directory` to retain generated builds and reports.
+
+BenchmarkDotNet iterations within a process are not independent DotNetLab randomized blocks. These results have `promotion_eligible: false`; use the cooperative harness and fresh normal-build confirmation for DotNetLab adoption decisions. EventPipe captures and JIT inspection remain available for bottleneck attribution and code-generation analysis.
+
+The project also supports direct BenchmarkDotNet CLI use:
+
+```powershell
+dotnet run --project D:\Workspaces\AI\sum-benchmark\ScratchBench.csproj -c Release -- --filter "*" --disasm
+```
+
 ## Minimal Synchronous Scenario Example
 
 Reference `Tedd.DotNetLab.Harness` (and optionally `Tedd.DotNetLab.Probes` if using startup method probes) in your benchmark or workload host:

@@ -66,6 +66,7 @@ Live native inspection, ReJIT, and probes use the optional C++ CoreCLR `ICorProf
 | Capability | What it enables |
 | --- | --- |
 | **Synchronous and asynchronous harnesses** | Repeatable scenarios with preparation, reset, validation, and cleanup outside measured work; batch timing, completed-operation counts, and scoped allocation measurements. |
+| **BenchmarkDotNet microbenchmarks** | Isolated Release benchmarks with pilot calibration, overhead evaluation, adaptive warmup, repeated measurements, memory diagnostics, and retained full JSON and CSV reports. Generate a project with `scaffold --engine benchmarkdotnet` and run it through `lab.run` action `benchmarkdotnet`. |
 | **A/B and multi-variant comparisons** | Preregistered, seeded randomized complete block designs with fixed inputs, warmup, budgets, primary metrics, and acceptance policies. |
 | **Statistical inference** | Paired log-ratio t-intervals for positive costs, absolute-difference analysis for allocations, family-wise error control, and two one-sided tests (TOST) for equivalence. |
 | **Multiple objectives** | Evaluate elapsed cost, throughput, allocation, and qualified GC-overlap objectives together. Primary metrics and mandatory guardrails govern acceptance; Pareto comparisons expose tradeoffs. |

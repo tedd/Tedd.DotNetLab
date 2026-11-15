@@ -129,7 +129,9 @@ public record CreateConfirmationPlan(string SelectedCandidateId,string SourcePat
 [JsonDerivedType(typeof(StartProfilerAttachment),"attach_profiler")]
 [JsonDerivedType(typeof(ReconcileProfilerAttachment),"reconcile_profiler_attachment")]
 [JsonDerivedType(typeof(StartJitDisasm),"capture_jit_disasm")]
+[JsonDerivedType(typeof(StartBenchmarkDotNet),"benchmarkdotnet")]
 public abstract record RunRequest;
+public record StartBenchmarkDotNet(string ExecutablePath,string GrantId,string IdempotencyKey,string Filter="*",string Job="default",int LaunchCount=2,int MaximumDurationSeconds=600) : RunRequest;
 public record StartProfilerAttachment(string PlanId,string GrantId,string IdempotencyKey) : RunRequest;
 public record ReconcileProfilerAttachment(string OperationId,string GrantId) : RunRequest;
 public record StartJitDisasm(string MethodFilter,string ScenarioId,string Variant,string GrantId,string IdempotencyKey,string? BuildId=null,string? ExecutablePath=null,int Operations=1000,int WarmupBatches=5,bool TieredPgo=true,int MaximumDurationSeconds=60) : RunRequest;

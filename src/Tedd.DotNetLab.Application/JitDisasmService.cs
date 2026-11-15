@@ -182,7 +182,7 @@ public sealed partial class LabService
         }
         else
         {
-            verifiedScratchDll = AuthorizeScratchExecutableDisasm(grant, executablePath!);
+            verifiedScratchDll = AuthorizeScratchExecutable(grant, executablePath!);
             leaseTarget = new("jit-disasm-" + grant.TargetId, 0, 0, "jit-disasm-" + grant.TargetId, RuntimeSupport.Current, "X64");
         }
 
@@ -199,7 +199,7 @@ public sealed partial class LabService
             using var measurementPermit = await activityScheduler.EnterMeasurementAsync(deadline.Token);
 
             if (build is not null) AuthorizeBuildDisasmGrant(grant, build);
-            else verifiedScratchDll = AuthorizeScratchExecutableDisasm(grant, verifiedScratchDll!);
+            else verifiedScratchDll = AuthorizeScratchExecutable(grant, verifiedScratchDll!);
             Catalog.UseGrant(grant);
 
             string? stagedDir = null;
@@ -433,14 +433,14 @@ public sealed partial class LabService
         throw new LabException("permission_denied", "Grant does not authorize launching this registered build.");
     }
 
-    private string AuthorizeScratchExecutableDisasm(Grant grant, string executablePath)
+    private string AuthorizeScratchExecutable(Grant grant, string executablePath)
     {
         if (!IsScratchGrant(grant) || grant.Workspace != Catalog.Root ||
             grant.Permission != Permission.ExecuteRegisteredScenario ||
             grant.ExpiresAt <= DateTimeOffset.UtcNow || grant.MaximumOperations <= 0 ||
             string.IsNullOrEmpty(grant.ContentHash))
         {
-            throw new LabException("permission_denied", "JIT disassembly on an executable_path requires an active scratch-directory execute grant.");
+            throw new LabException("permission_denied", "Execution on an executable_path requires an active scratch-directory execute grant.");
         }
         string scratchPrefix = NormalizeScratchPrefix(grant.ContentHash);
         if (!IsPathStrictlyUnderScratch(executablePath, scratchPrefix) ||

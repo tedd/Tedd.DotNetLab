@@ -191,6 +191,22 @@ Use a disposable scratch project to falsify a micro-mechanism quickly (e.g., "do
 4. **Iterate:** stop the process, edit, rebuild, restart → new PID/target, **same grant**. Freeze a new plan whenever code changes (the variant code is part of the treatment).
 5. **Clean up** the scratch directory after the target exits; keep catalog evidence.
 
+### Isolated microbenchmarks (`benchmarkdotnet`)
+
+For method-level microbenchmarks, use the BenchmarkDotNet engine:
+
+1. Generate `<host> scaffold <abs-scratch-dir> --engine benchmarkdotnet` and replace its `[Benchmark]` methods and independent setup oracle with the workload. One invocation should represent one completed operation; return or consume results to prevent dead-code elimination.
+2. Inspect all benchmark/setup/cleanup code and resolved configuration for side effects, then build the emitted project in Release. Keep source and generated binaries in the granted scratch directory.
+3. Issue `<host> grant-scratch <workspace> <abs-scratch-dir> <seconds> <max-ops>` and use its execute grant:
+
+```json
+{"request":{"action":"benchmarkdotnet","executable_path":"D:\\Workspaces\\AI\\bench\\bin\\Release\\net10.0\\ScratchBench.dll","grant_id":"grt_scratch_exec","idempotency_key":"bdn-1","filter":"*","job":"default","launch_count":2,"maximum_duration_seconds":600}}
+```
+
+4. Poll `status` and read the operation's `result_id` with `lab.query` view `record`. `benchmarkdotnet_result` history lists these runs. Inspect retained full JSON using `artifact_ids` and `artifact_slice`; it includes pilot, overhead, warmup, actual, and result observations. Mean/median/dispersion, confidence intervals, launch counts, allocation bytes/op, and GC measurement denominators are also summarized in the result.
+
+BenchmarkDotNet performs calibration, overhead evaluation, adaptive warmup, repeated measurements, and memory diagnostics in isolated processes. `short` is exploratory; `dry` only checks execution. Failed jobs retain output and available reports. Preserve both the source scratch directory and `evidence_directory`, including generated build files. These results are not inputs to `lab.compare`: within-launch iterations are not independent randomized blocks, and `promotion_eligible` remains false. Confirm adoption through a frozen DotNetLab plan and fresh normal builds.
+
 ### Owned-Process JIT Disassembly (`capture_jit_disasm`)
 
 Launches a fresh owned process with `DOTNET_JitDisasm=<method_filter>`, runs the scenario variant through warmup so Tier 1 + Dynamic PGO code exists, and stores the full listing. Unlike live `lab.inspect` `native`, it **works for generic methods, `Span<T>`/`ref struct` signatures, `Vector128/256<T>` code, and shows the code as inlined into callers.**

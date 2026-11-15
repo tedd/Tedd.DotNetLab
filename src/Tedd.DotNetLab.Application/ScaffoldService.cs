@@ -12,12 +12,17 @@ public record ScaffoldResult(
     string ProgramPath,
     string ScenarioId,
     string ExpectedOutputDllPath,
-    string BuildCommand);
+    string BuildCommand,
+    string Engine = "harness",
+    string? RunCommand = null);
 
 public static class ScaffoldService
 {
-    public static ScaffoldResult Create(string outputDirectory, string scenarioId = "scratch-bench", bool overwrite = false)
+    public static ScaffoldResult Create(string outputDirectory, string scenarioId = "scratch-bench", bool overwrite = false,
+        string engine = "harness")
     {
+        if (engine is not ("harness" or "benchmarkdotnet"))
+            throw new LabException("invalid_request", "Engine must be harness or benchmarkdotnet.");
         if (string.IsNullOrWhiteSpace(outputDirectory) || !Path.IsPathFullyQualified(outputDirectory))
             throw new LabException("invalid_path", "Scaffold output directory must be a fully qualified local path.");
         if (!Regex.IsMatch(scenarioId, @"\A[a-z0-9][a-z0-9_-]{0,63}\z"))
@@ -43,6 +48,8 @@ public static class ScaffoldService
             if (dir.Exists && (dir.Attributes & FileAttributes.ReparsePoint) != 0)
                 throw new LabException("invalid_path", "Scaffold directory cannot traverse reparse points.");
         }
+
+        if (engine == "benchmarkdotnet") return BenchmarkDotNetScaffold.Create(fullDir, scenarioId, overwrite);
 
         string hostDir = Path.GetFullPath(AppContext.BaseDirectory);
         string contractsDll = Path.Combine(hostDir, "Tedd.DotNetLab.Contracts.dll");

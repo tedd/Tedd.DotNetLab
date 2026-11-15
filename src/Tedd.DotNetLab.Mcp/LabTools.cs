@@ -169,6 +169,7 @@ public sealed class LabTools(LabService service)
         StartNativeSeriesComparison series=>service.StartNativeSeriesComparison(series.DatasetId,series.IdempotencyKey),
         RegisterNativeSeriesResults series=>service.StartNativeSeriesRegistration(series.PlanId,series.ResultIds,series.IdempotencyKey),
         StartJitDisasm disasm=>service.StartJitDisasm(disasm.MethodFilter,disasm.ScenarioId,disasm.Variant,disasm.GrantId,disasm.IdempotencyKey,disasm.BuildId,disasm.ExecutablePath,disasm.Operations,disasm.WarmupBatches,disasm.TieredPgo,disasm.MaximumDurationSeconds),
+        StartBenchmarkDotNet benchmark=>service.StartBenchmarkDotNet(benchmark.ExecutablePath,benchmark.GrantId,benchmark.IdempotencyKey,benchmark.Filter,benchmark.Job,benchmark.LaunchCount,benchmark.MaximumDurationSeconds),
         _=>throw new LabException("invalid_request","Invalid run action.")
     });
 
@@ -267,7 +268,7 @@ public sealed class LabTools(LabService service)
     private object History(QueryHistory request)
     {
         if(!new[]{"hypothesis","candidate","plan","execution","run","comparison","work_item","decision","capture","analysis","baseline","baseline_alias","analysis_failure",
-            "normal_build","confirmation_plan","confirmation_execution","normal_build_session","confirmation_decision","objective_vector","factorial_comparison","execution_window","export_plan","export_result","bundle_import_plan","bundle_import_result","imported_evidence_member","controller_resource_snapshot","controller_resource_unavailable","deletion_plan","deletion_result","artifact_recovery","catalog_backup","reference_release_plan","reference_release_result","stack_analysis","stack_analysis_failure","quantile_plan","quantile_dataset","quantile_comparison","individual_latency_plan","individual_latency_run","compilation_control_plan","compilation_control_measurement","compilation_control_result","native_trial_plan","native_trial_run","native_trial_result","native_series_plan","native_series_dataset","native_series_comparison","jit_disasm_result"}.Contains(request.Kind))
+            "normal_build","confirmation_plan","confirmation_execution","normal_build_session","confirmation_decision","objective_vector","factorial_comparison","execution_window","export_plan","export_result","bundle_import_plan","bundle_import_result","imported_evidence_member","controller_resource_snapshot","controller_resource_unavailable","deletion_plan","deletion_result","artifact_recovery","catalog_backup","reference_release_plan","reference_release_result","stack_analysis","stack_analysis_failure","quantile_plan","quantile_dataset","quantile_comparison","individual_latency_plan","individual_latency_run","compilation_control_plan","compilation_control_measurement","compilation_control_result","native_trial_plan","native_trial_run","native_trial_result","native_series_plan","native_series_dataset","native_series_comparison","jit_disasm_result","benchmarkdotnet_result"}.Contains(request.Kind))
             throw new LabException("invalid_request","Unknown notebook/evidence view.");
         return service.Catalog.List(request.Kind,request.Limit,request.Cursor,includeOversizedFirst:true);
     }

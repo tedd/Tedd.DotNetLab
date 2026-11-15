@@ -97,6 +97,7 @@ public sealed class McpTests
         foreach(string action in new[]{"prepare_export","prepare_deletion","prepare_retention","recover_artifacts","verify_catalog_backup","release_references"})
             Assert.DoesNotContain('"'+action+'"',schemas);
         Assert.Contains("register_compiled_candidate",schemas);
+        Assert.Contains("benchmarkdotnet",schemas);
         Assert.IsType<PrepareDeletion>(Wire.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}"));
         Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}",McpCatalog.Json));
     }
