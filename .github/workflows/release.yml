@@ -2,6 +2,8 @@ name: Release
 
 on:
   push:
+    branches:
+      - deploy
     tags:
       - "v*"
   workflow_dispatch:
@@ -25,8 +27,46 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: dotnetlab-release
+  cancel-in-progress: false
+
 jobs:
+  release-version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve release version
+        id: version
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          stable='(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag="$GITHUB_REF_NAME"
+          elif [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            tag="$REQUESTED_TAG"
+          else
+            minimum="$(tr -d '\r' < RELEASE_VERSION)"
+            [[ "$minimum" =~ ^${stable}$ ]] || { echo 'Invalid RELEASE_VERSION'; exit 1; }
+            refs="$(git ls-remote --tags --refs origin)"
+            latest="$(PATTERN="^refs/tags/v${stable}$" awk '$2 ~ ENVIRON["PATTERN"] { print substr($2, 12) }' <<< "$refs" | sort -V | tail -n 1)"
+            next="$minimum"
+            if [[ -n "$latest" ]]; then
+              IFS=. read -r major minor patch <<< "$latest"
+              next="$(printf '%s\n' "$minimum" "$major.$minor.$((patch + 1))" | sort -V | tail -n 1)"
+            fi
+            tag="v$next"
+          fi
+          [[ "$tag" =~ ^v${stable}(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]] || { echo 'Invalid release tag'; exit 1; }
+          printf 'tag=%s\nversion=%s\n' "$tag" "${tag#v}" >> "$GITHUB_OUTPUT"
+
   build-windows-x64:
+    needs: release-version
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -43,9 +83,10 @@ jobs:
 
       - name: Restore and publish Windows x64 distribution
         shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
         run: |
-          $version = ("${{ github.ref_name }}" -replace '^v', '')
-          if (-not $version -or $version -eq 'main' -or $version -eq 'master') { $version = ("${{ inputs.tag }}" -replace '^v', '') }
+          $version = $env:RELEASE_VERSION
           $buildRoot = "${{ runner.temp }}/dotnetlab-build"
           $publishDir = "${{ runner.temp }}/dotnetlab-publish-win-x64"
           New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
@@ -87,6 +128,7 @@ jobs:
           path: ${{ runner.temp }}/dist/*.zip
 
   build-linux-x64:
+    needs: release-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -107,9 +149,9 @@ jobs:
           ctest --test-dir "${{ runner.temp }}/dotnetlab-build/native" --output-on-failure
 
       - name: Restore and publish Linux x64 distribution
+        env:
+          VERSION: ${{ needs.release-version.outputs.version }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          if [[ -z "$VERSION" || "$VERSION" == "main" || "$VERSION" == "master" ]]; then VERSION="${{ inputs.tag }}"; VERSION="${VERSION#v}"; fi
           BUILD_ROOT="${{ runner.temp }}/dotnetlab-build"
           PUBLISH_DIR="${{ runner.temp }}/dotnetlab-publish-linux-x64"
           mkdir -p "$PUBLISH_DIR" "${{ runner.temp }}/dist"
@@ -144,7 +186,7 @@ jobs:
           path: ${{ runner.temp }}/dist/*.tar.gz
 
   pack-nuget:
-    needs: [build-windows-x64, build-linux-x64]
+    needs: [release-version, build-windows-x64, build-linux-x64]
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -164,9 +206,10 @@ jobs:
 
       - name: Restore, build, and pack NuGet packages
         shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
         run: |
-          $version = ("${{ github.ref_name }}" -replace '^v', '')
-          if (-not $version -or $version -eq 'main' -or $version -eq 'master') { $version = ("${{ inputs.tag }}" -replace '^v', '') }
+          $version = $env:RELEASE_VERSION
           $buildRoot = "${{ runner.temp }}/dotnetlab-build"
           $nupkgDir = "${{ runner.temp }}/nupkgs"
           New-Item -ItemType Directory -Path $nupkgDir -Force | Out-Null
@@ -188,8 +231,7 @@ jobs:
             ${{ runner.temp }}/nupkgs/*.snupkg
 
   publish-release:
-    needs: [build-windows-x64, build-linux-x64, pack-nuget]
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    needs: [release-version, build-windows-x64, build-linux-x64, pack-nuget]
     runs-on: ubuntu-latest
     steps:
       - name: Setup .NET SDK
@@ -215,7 +257,7 @@ jobs:
       - name: Create GitHub Release with archives and NuGet packages
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || inputs.tag }}
+          tag_name: ${{ needs.release-version.outputs.tag }}
           target_commitish: ${{ github.sha }}
           generate_release_notes: true
           files: |

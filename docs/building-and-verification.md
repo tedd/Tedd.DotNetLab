@@ -76,7 +76,9 @@ python tools/windows_package.py verify --archive Tedd.DotNetLab-1.0.0-windows-x6
 
 ### NuGet Packages and GitHub Actions Artifacts
 
-Every CI run ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) and tagged release ([`.github/workflows/release.yml`](../.github/workflows/release.yml)) builds both Windows and Linux native profilers, packs all `src/` NuGet packages (`.nupkg` and `.snupkg`, including the `Tedd.DotNetLab` `.NET` CLI tool and `Tedd.DotNetLab.Harness` library), uploads them as the **`nuget-packages`** workflow artifact, attaches them to GitHub Releases, and optionally pushes them to NuGet.org (`NUGET_API_KEY`) or GitHub Packages:
+The [release workflow](../.github/workflows/release.yml) builds the Windows and Linux installer archives and attaches them and the NuGet packages to GitHub Releases. A push to `deploy` publishes the greater of the version in [`RELEASE_VERSION`](../RELEASE_VERSION) and the next patch after the highest stable version tag. The installers download the latest published GitHub release.
+
+The workflow also accepts version-tag pushes and manual dispatch with an explicit tag. Version-tag pushes publish to NuGet.org when `NUGET_API_KEY` is configured. Manual dispatch can opt in to NuGet.org and GitHub Packages publication. [CI](../.github/workflows/ci.yml) also builds the native profilers and produces the **`nuget-packages`** artifact.
 
 ```bash
 dotnet pack Tedd.DotNetLab.sln -c Release --no-restore -p:DotNetLabPackCrossPlatform=true
