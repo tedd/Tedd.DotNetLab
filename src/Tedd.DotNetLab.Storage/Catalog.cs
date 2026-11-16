@@ -149,7 +149,8 @@ public sealed partial class Catalog : IDisposable
     }
     private static NotebookRecord ReadRecord(SqliteDataReader r) =>
         new(r.GetString(0), r.GetString(1), r.GetInt64(2), r.GetString(3), r.GetString(4), DateTimeOffset.Parse(r.GetString(5)));
-    public Page<NotebookRecord> List(string kind, int limit = 100, string? cursor = null,bool includeOversizedFirst=false,string? prefix=null)
+    public Page<NotebookRecord> List(string kind, int limit = 100, string? cursor = null,bool includeOversizedFirst=false,
+        string? prefix=null,IReadOnlyList<string>? investigationTargetKeys=null)
     {
         if (limit is < 1 or > 1000) throw new LabException("resource_limit", "Page limit must be 1..1000.");
         string after = "";
@@ -169,8 +170,14 @@ public sealed partial class Catalog : IDisposable
             WHERE r.Kind=$kind AND r.Id>$after
             AND ($prefix IS NULL OR substr(r.Id,1,length($prefix))=$prefix)
             AND r.Revision=(SELECT MAX(s.Revision) FROM Record s WHERE s.Id=r.Id)
+            AND ($targetKeys IS NULL OR EXISTS (
+                SELECT 1 FROM json_each($targetKeys) AS key
+                WHERE key.value=json_extract(r.Json,'$.area')
+                OR key.value IN (SELECT value FROM json_each(r.Json,'$.target_keys'))
+            ))
             ORDER BY r.Id LIMIT $limit
-            """, ("$kind", kind), ("$after", after), ("$limit", limit + 1), ("$prefix", prefix));
+            """, ("$kind", kind), ("$after", after), ("$limit", limit + 1), ("$prefix", prefix),
+            ("$targetKeys", investigationTargetKeys is null?null:Wire.Serialize(investigationTargetKeys)));
         using var reader = command.ExecuteReader();
         var rows = new List<NotebookRecord>();
         int bytes = 0;

@@ -117,7 +117,8 @@ public sealed class LabTools(LabService service)
         CreateNativeSeries series=>await service.CreateNativeSeriesAsync(series.TrialPlanIds,series.Analysis,series.IndependentSessions,series.IndependenceJustification,series.CarryoverJustification,series.MaximumDurationSeconds),
         CreateIndividualLatencyPlan latency=>service.CreateIndividualLatencyPlan(latency.ScenarioId,latency.ScenarioVersion,latency.InputHash,latency.Variant,latency.Operations,latency.WarmupBatches,latency.MaximumDurationSeconds,latency.CompilationControlId,latency.TargetRuntimeVersion),
         RecordInvestigation investigation=>service.RecordInvestigation(new(investigation.Area,investigation.Approach,
-            investigation.Status,investigation.Notes,investigation.EvidenceIds??[],investigation.PullRequestUrl),Revision(investigation.ExpectedRevision)),
+            investigation.Status,investigation.Notes,investigation.EvidenceIds??[],investigation.PullRequestUrl,investigation.TargetKeys),
+            Revision(investigation.ExpectedRevision)),
         CreateWorkItem work=>service.WorkItem(work.Question,work.Priority,work.Dependencies,work.EvidenceIds),
         ReviseWorkItem work=>service.WorkItem(work.Question,work.Priority,work.Dependencies,work.EvidenceIds,
             work.Id,Integer(work.ExpectedRevision),work.State),
@@ -275,8 +276,8 @@ public sealed class LabTools(LabService service)
     private object InvestigationQuery(QueryInvestigations request)
     {
         if(request.Approach is null)
-            return service.Investigations(request.Area,request.Limit,request.Cursor);
-        if(request.Area is null || request.Cursor is not null)
+            return service.Investigations(request.Area,request.Limit,request.Cursor,request.TargetKeys);
+        if(request.Area is null || request.Cursor is not null || request.TargetKeys is not null)
             throw new LabException("invalid_request","An exact investigation lookup requires area and approach without a cursor.");
         return service.GetInvestigation(request.Area,request.Approach);
     }

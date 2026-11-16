@@ -12,6 +12,42 @@ public sealed class InvestigationTests
         new(area,approach,"in_progress","Measure allocations on the large input.",[],null);
 
     [Fact]
+    public async Task AnyExactTargetKeyFindsTheRecordAndKeysSurviveRevisionAndRestart()
+    {
+        using var workspace=new TestWorkspace();
+        var claim=Claim() with { TargetKeys=["Dictionary.cs",@"src\Dictionary.cs","System.Collections.Generic.Dictionary"] };
+        NotebookRecord updated;
+        await using(var lab=new LabService(workspace.Root))
+        {
+            var original=lab.RecordInvestigation(claim);
+            updated=lab.RecordInvestigation(Claim() with { Status="dead_end" },original.Revision);
+            lab.RecordInvestigation(Claim("legacy"));
+            lab.RecordInvestigation(Claim("other") with { TargetKeys=["ConcurrentDictionary.cs"] });
+        }
+        await using var reopened=new LabService(workspace.Root);
+        foreach(string key in new[]{"Dictionary.cs","src/Dictionary.cs",@"src\Dictionary.cs","System.Collections.Generic.Dictionary"})
+            Assert.Equal(updated,Assert.Single(reopened.Investigations(null,10,null,[key]).Rows));
+        Assert.Equal(updated,Assert.Single(reopened.Investigations(null,10,null,["missing","Dictionary.cs","src/Dictionary.cs"]).Rows));
+        Assert.Empty(reopened.Investigations(null,10,null,["Dictionary","dictionary.cs","Dictionary*", "src/Dictionary"]).Rows);
+        Assert.Equal("investigation:legacy:reuse-buffer",Assert.Single(reopened.Investigations(null,10,null,["legacy"]).Rows).Id);
+    }
+
+    [Fact]
+    public async Task SearchCursorIsBoundToNormalizedKeySet()
+    {
+        using var workspace=new TestWorkspace();
+        await using var lab=new LabService(workspace.Root);
+        var first=lab.RecordInvestigation(Claim("a") with { TargetKeys=["Dictionary.cs"] });
+        var second=lab.RecordInvestigation(Claim("b") with { TargetKeys=["Dictionary.cs"] });
+        var page=lab.Investigations(null,1,null,["Dictionary.cs",@"src\Dictionary.cs"]);
+        Assert.Equal(first,Assert.Single(page.Rows));
+        Assert.NotNull(page.NextCursor);
+        Assert.Equal(second,Assert.Single(lab.Investigations(null,1,page.NextCursor,["src/Dictionary.cs","Dictionary.cs","Dictionary.cs"]).Rows));
+        Assert.Equal("invalid_cursor",Assert.Throws<LabException>(()=>lab.Investigations(null,1,page.NextCursor,["Dictionary.cs"])).Code);
+        Assert.Equal("invalid_request",Assert.Throws<LabException>(()=>lab.Investigations(null,1,null,[])).Code);
+    }
+
+    [Fact]
     public async Task ReopeningWorkspacePreservesNotesEvidenceAndPriorRevisions()
     {
         using var workspace=new TestWorkspace();
@@ -164,7 +200,8 @@ public sealed class InvestigationTests
             """;
         Assert.Equal("record_not_found",(await tools.InvokeAsync("lab.query",lookup)).Code);
         var claimed=await tools.InvokeAsync("lab.experiment","""
-            {"action":"record_investigation","area":"parser","approach":"reuse-buffer","status":"in_progress","notes":"Inspect allocations."}
+            {"action":"record_investigation","area":"parser","approach":"reuse-buffer","status":"in_progress","notes":"Inspect allocations.",
+             "target_keys":["Parser.cs","src/Parser.cs","Example.Parser"]}
             """);
         Assert.Equal("ok",claimed.Status);
         Assert.Equal("1",claimed.Data!.Value.GetProperty("revision").GetString());
@@ -181,6 +218,8 @@ public sealed class InvestigationTests
         var content=Wire.Deserialize<Investigation>(row.GetProperty("json").GetString()!);
         Assert.Equal("pr_merged",content.Status);
         Assert.Equal(Pr,content.PullRequestUrl);
+        var search=await tools.InvokeAsync("lab.query","""{"view":"investigations","target_keys":["missing","src\\Parser.cs"]}""");
+        Assert.Equal(row.GetRawText(),Assert.Single(search.Data!.Value.GetProperty("rows").EnumerateArray()).GetRawText());
         Assert.Equal("invalid_request",(await tools.InvokeAsync("lab.query","""{"view":"investigations","approach":"reuse-buffer"}""")).Code);
     }
 }

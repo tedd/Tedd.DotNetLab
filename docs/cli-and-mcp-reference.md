@@ -154,7 +154,7 @@ Every MCP tool accepts a single top-level argument `{"request": { ... }}` using 
 Supported `view` values:
 - **Hotspots & Traces:** `hotspots` (inclusive/exclusive rankings), `sampled_method`, `metric`, `gc_timeline`, `suspensions`, `counters`, `counter_window`, `run_window`, `available_evidence`.
 - **Latencies & Native:** `individual_latency_slice`, `verify_native_trial`, `native_series_comparison`.
-- **Catalog & Chunks:** `investigations` (all areas, one area, or an exact area and approach), `record`, `history`, `artifact_slice` (reads chunked oversized MCP responses or artifacts), `controller_resources`, `operation_policy`.
+- **Catalog & Chunks:** `investigations` (exact target keys, area, or area and approach), `record`, `history`, `artifact_slice` (reads chunked oversized MCP responses or artifacts), `controller_resources`, `operation_policy`.
 
 Evidence administration is available through `dotnetlab call <workspace> <tool>`, with a JSON request on stdin. These actions are excluded from connected MCP schemas:
 

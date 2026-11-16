@@ -22,7 +22,7 @@ public sealed class McpTools(LabTools tools)
     [Description("Start granted capture, scenario, BenchmarkDotNet, individual-operation timing, or confirmation jobs; compare retained quantiles or analyze sampled stacks; poll, cancel, or stop by operation ID.")]
     public Task<CallToolResult> Run(RunRequest request)=>McpResponse.Result(tools.Run(request));
     [McpServerTool(Name="lab.query",ReadOnly=true,Destructive=false,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
-    [Description("Query investigation coverage by area or exact approach, retained metrics, sampled hotspots, run windows, runtime observations, history, verified exports, availability, and bounded artifact slices.")]
+    [Description("Query investigation coverage by exact target keys (filename, path, or qualified type), area, or approach. Also query retained metrics, sampled hotspots, run windows, runtime observations, history, verified exports, availability, and bounded artifact slices.")]
     public Task<CallToolResult> Query(QueryRequest request)=>McpResponse.Result(tools.Query(request));
     [McpServerTool(Name="lab.compare",Destructive=false,Idempotent=true,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
     [Description("Compute frozen comparisons, bounded objective vectors, complete four-arm factorial effects/interactions, or normal-build promotion decisions.")]

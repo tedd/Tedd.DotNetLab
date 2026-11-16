@@ -114,9 +114,13 @@ public sealed class McpTests
         await using var client=await Connect(workspace.Root,timeout.Token);
         var claim=await Call(client,"lab.experiment",new
         {
-            action="record_investigation",area="parser",approach="reuse-buffer",status="dead_end",notes="No change in allocations."
+            action="record_investigation",area="parser",approach="reuse-buffer",status="dead_end",
+            notes="No change in allocations.",target_keys=new[]{"Parser.cs","src/Parser.cs","Example.Parser"}
         },timeout.Token);
-        var page=await Call(client,"lab.query",new { view="investigations",area="parser" },timeout.Token);
+        var page=await Call(client,"lab.query",new
+        {
+            view="investigations",target_keys=new[]{"missing","Example.Parser"}
+        },timeout.Token);
         var row=Assert.Single(page.GetProperty("rows").EnumerateArray());
         Assert.Equal(claim.GetProperty("id").GetString(),row.GetProperty("id").GetString());
         Assert.Contains("dead_end",row.GetProperty("json").GetString());

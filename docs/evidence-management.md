@@ -8,11 +8,19 @@ Linux catalog workspaces require ext4, XFS, Btrfs, or local overlayfs. Windows-b
 
 Use the same project workspace across agent sessions to retain investigation coverage with the measurement catalog. A project-scoped install defaults to `<project-dir>/.DotNetLab`. Add `.DotNetLab/` to the target project's ignore rules to keep the catalog and raw artifacts local. Select a common path with `--workspace` to reuse an existing catalog or share it across local checkouts.
 
-Before starting an experiment, call `lab.query` with `view=investigations` and an `area` key to review prior approaches. Omit `area` to enumerate all areas. List results accept `limit` (default 20) and a cursor from the same filter. Supply both `area` and `approach` for exact lookup, which returns `record_not_found` for an unregistered approach. Keys use lowercase ASCII letters, digits, and internal hyphens. Reuse the established keys for the same area and mechanism.
+Before starting an experiment, resolve the target in the checkout and search all applicable identifiers together:
+
+```json
+{"view":"investigations","target_keys":["Dictionary.cs","src/Collections/Dictionary.cs","System.Collections.Generic.Dictionary"]}
+```
+
+Supply the exact filename, repository-relative path, and fully qualified type name where applicable. Include known former names and paths. A record appears once when any supplied key exactly matches a stored target key or area key. Matching preserves case, trims outer whitespace, and treats backslashes as forward slashes. Follow the cursor through the matching records and verify the target and mechanism in each relevant hit. A shared filename can match multiple targets. Search accepts 1–32 keys of up to 512 characters each.
+
+List results accept `limit` (default 20) and a cursor from the same filter. Use `area` instead of `target_keys` to list a specific notebook area, or omit both to review overall coverage. Supply both `area` and `approach` for exact record lookup, which returns `record_not_found` for an unregistered pair. Area and approach keys use lowercase ASCII letters, digits, and internal hyphens.
 
 Search the repository's pull requests for the area and mechanism, including open and merged work. PR links and statuses in the catalog reflect the last recorded observation. When work is already covered, record the existing PR and proceed only if a distinct approach or changed conditions warrant a new investigation.
 
-Call `lab.experiment` with `action=record_investigation`, `area`, `approach`, `status=in_progress`, and `notes` to claim an unregistered approach. Concurrent claims for the same keys return `revision_conflict` to the losing caller. To update an existing record, supply its latest `expected_revision` as a decimal string. On conflict, re-read the record before deciding whether to continue.
+Call `lab.experiment` with `action=record_investigation`, `area`, `approach`, `status=in_progress`, `notes`, and the same `target_keys` to claim an unregistered approach. Concurrent claims for the same area and approach return `revision_conflict` to the losing caller. To update an existing record, supply its latest `expected_revision` as a decimal string. On conflict, re-read the record before deciding whether to continue. Revisions retain existing target keys and can add aliases. Records created without target keys are discoverable by area until a revision adds their source identifiers.
 
 Use `dead_end`, `inconclusive`, `supported`, or `abandoned` to record the disposition. Use `pr_open`, `pr_merged`, or `pr_closed` with an HTTPS `pull_request_url` for PR coverage. Each revision is a complete snapshot. Carry forward applicable notes, links, and `evidence_ids` when updating it. Write Markdown notes with the code revision, workload and runtime, intervention, outcome, and conditions that would justify revisiting the work. Reference retained catalog records using `evidence_ids`. Use `lab.query` with `view=record`, `id`, and `revision` to read a prior snapshot.
 

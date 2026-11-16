@@ -4,7 +4,7 @@ using Tedd.DotNetLab.Contracts;
 namespace Tedd.DotNetLab.Application;
 
 public sealed record Investigation(string Area,string Approach,string Status,string Notes,
-    IReadOnlyList<string> EvidenceIds,string? PullRequestUrl);
+    IReadOnlyList<string> EvidenceIds,string? PullRequestUrl,IReadOnlyList<string>? TargetKeys=null);
 
 public sealed partial class LabService
 {
@@ -30,17 +30,36 @@ public sealed partial class LabService
              url.Any(char.IsWhiteSpace)))
             throw new LabException("invalid_request","Pull request statuses require an absolute HTTPS pull request URL without credentials.");
 
+        if (investigation.TargetKeys is not null || expectedRevision is not null)
+        {
+            IReadOnlyList<string> previousKeys=[];
+            if (expectedRevision is not null)
+            {
+                var previous=Catalog.Get(id);
+                if (previous.Revision!=expectedRevision)
+                    throw new LabException("revision_conflict","Expected investigation revision is stale.");
+                previousKeys=Wire.Deserialize<Investigation>(previous.Json).TargetKeys??[];
+            }
+            var supplied=investigation.TargetKeys is null?[]:NormalizeTargetKeys(investigation.TargetKeys);
+            var merged=NormalizeTargetKeys(previousKeys.Concat(supplied)
+                .Distinct(StringComparer.Ordinal).ToArray(),allowEmpty:true);
+            investigation=investigation with { TargetKeys=merged.Length==0?null:merged };
+        }
         foreach (string evidenceId in investigation.EvidenceIds) Catalog.Get(evidenceId);
         return Catalog.Put(id,InvestigationKind,investigation,expectedRevision);
     }
 
-    public Page<NotebookRecord> Investigations(string? area,int limit,string? cursor)
+    public Page<NotebookRecord> Investigations(string? area,int limit,string? cursor,IReadOnlyList<string>? targetKeys=null)
     {
+        if (area is not null && targetKeys is not null)
+            throw new LabException("invalid_request","Choose either an area or a set of exact target keys.");
+        string[]? keys=targetKeys is null?null:NormalizeTargetKeys(targetKeys);
         string? prefix=area is null?null:InvestigationPrefix(area);
-        string cursorScope=(area??"*")+"/";
+        string cursorScope=(keys is null?area??"*":"keys:"+Wire.Hash(keys))+"/";
         if (cursor is not null && !cursor.StartsWith(cursorScope,StringComparison.Ordinal))
-            throw new LabException("invalid_cursor","Cursor belongs to another investigation area or view.");
-        var page=Catalog.List(InvestigationKind,limit,cursor?[cursorScope.Length..],includeOversizedFirst:true,prefix:prefix);
+            throw new LabException("invalid_cursor","Cursor belongs to different investigation filters.");
+        var page=Catalog.List(InvestigationKind,limit,cursor?[cursorScope.Length..],includeOversizedFirst:true,prefix:prefix,
+            investigationTargetKeys:keys);
         return page.NextCursor is null?page:page with { NextCursor=cursorScope+page.NextCursor };
     }
 
@@ -48,6 +67,15 @@ public sealed partial class LabService
         Catalog.Get(InvestigationPrefix(area)+InvestigationKey(approach));
 
     private static string InvestigationPrefix(string area) => $"investigation:{InvestigationKey(area)}:";
+
+    private static string[] NormalizeTargetKeys(IReadOnlyList<string> keys,bool allowEmpty=false)
+    {
+        if (keys.Count>32 || !allowEmpty && keys.Count==0 || keys.Any(key=>
+            string.IsNullOrWhiteSpace(key) || key.Length>512 || key.Any(char.IsControl)))
+            throw new LabException("invalid_request","Supply 1–32 target keys of up to 512 characters each.");
+        return keys.Select(key=>key.Trim().Replace('\\','/'))
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+    }
 
     private static string InvestigationKey(string value)
     {
