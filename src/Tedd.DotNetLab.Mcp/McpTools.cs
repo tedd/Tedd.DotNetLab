@@ -16,13 +16,13 @@ public sealed class McpTools(LabTools tools)
     [Description("Read retained records and artifact manifests. Unqualified native inspection is explicitly unsupported.")]
     public Task<CallToolResult> Inspect(InspectRequest request)=>McpResponse.Result(tools.Inspect(request));
     [McpServerTool(Name="lab.experiment",Destructive=false,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
-    [Description("Maintain hypotheses, baselines/aliases, frozen plans including individual-observation quantile designs, verified observation datasets, registered builds, candidate metadata, work items, and decisions.")]
+    [Description("Maintain investigation coverage and pull request links, hypotheses, baselines/aliases, frozen plans, verified observation datasets, registered builds, candidate metadata, work items, and decisions.")]
     public Task<CallToolResult> Experiment(ExperimentRequest request)=>McpResponse.Result(tools.Experiment(request));
     [McpServerTool(Name="lab.run",Destructive=true,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
     [Description("Start granted capture, scenario, BenchmarkDotNet, individual-operation timing, or confirmation jobs; compare retained quantiles or analyze sampled stacks; poll, cancel, or stop by operation ID.")]
     public Task<CallToolResult> Run(RunRequest request)=>McpResponse.Result(tools.Run(request));
     [McpServerTool(Name="lab.query",ReadOnly=true,Destructive=false,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
-    [Description("Query retained metrics, individual-latency slices, sampled hotspots/method evidence, run windows, GC/suspensions, counter series and time windows, history, verified exports, availability, and bounded artifact slices.")]
+    [Description("Query investigation coverage by area or exact approach, retained metrics, sampled hotspots, run windows, runtime observations, history, verified exports, availability, and bounded artifact slices.")]
     public Task<CallToolResult> Query(QueryRequest request)=>McpResponse.Result(tools.Query(request));
     [McpServerTool(Name="lab.compare",Destructive=false,Idempotent=true,UseStructuredContent=true,OutputSchemaType=typeof(LabResponse))]
     [Description("Compute frozen comparisons, bounded objective vectors, complete four-arm factorial effects/interactions, or normal-build promotion decisions.")]

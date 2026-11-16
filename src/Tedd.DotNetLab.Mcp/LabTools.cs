@@ -116,6 +116,8 @@ public sealed class LabTools(LabService service)
         CreateLiveBenchmarkPlan live=>await service.CreateLiveBenchmarkPlanAsync(live.TargetId,Integer(live.ExpectedTargetEpoch),live.ScenarioId,live.Variant,live.Policy,live.CalibrationResultId,live.MutationId,live.CompilationControlId,live.MaximumDurationSeconds),
         CreateNativeSeries series=>await service.CreateNativeSeriesAsync(series.TrialPlanIds,series.Analysis,series.IndependentSessions,series.IndependenceJustification,series.CarryoverJustification,series.MaximumDurationSeconds),
         CreateIndividualLatencyPlan latency=>service.CreateIndividualLatencyPlan(latency.ScenarioId,latency.ScenarioVersion,latency.InputHash,latency.Variant,latency.Operations,latency.WarmupBatches,latency.MaximumDurationSeconds,latency.CompilationControlId,latency.TargetRuntimeVersion),
+        RecordInvestigation investigation=>service.RecordInvestigation(new(investigation.Area,investigation.Approach,
+            investigation.Status,investigation.Notes,investigation.EvidenceIds??[],investigation.PullRequestUrl),Revision(investigation.ExpectedRevision)),
         CreateWorkItem work=>service.WorkItem(work.Question,work.Priority,work.Dependencies,work.EvidenceIds),
         ReviseWorkItem work=>service.WorkItem(work.Question,work.Priority,work.Dependencies,work.EvidenceIds,
             work.Id,Integer(work.ExpectedRevision),work.State),
@@ -180,6 +182,7 @@ public sealed class LabTools(LabService service)
     {
         QueryRecord record=>service.Catalog.Get(record.Id,Revision(record.Revision)),
         QueryHistory history=>History(history),
+        QueryInvestigations investigations=>InvestigationQuery(investigations),
         QueryMetric metric=>await service.MetricAsync(metric.AnalysisId,metric.Metric),
         QueryGc gc=>Slice((await service.AnalysisAsync(gc.AnalysisId)).GcCycles,gc.AnalysisId,"gc",gc.Limit,gc.Cursor),
         QueryRunWindow window=>await service.RunWindowAsync(window.AnalysisId,window.RunId,window.ResidualToleranceMilliseconds),
@@ -268,6 +271,14 @@ public sealed class LabTools(LabService service)
         var summary=await service.AnalysisAsync(request.AnalysisId);
         var ordered=(summary.Contentions??[]).OrderByDescending(c=>c.DurationMilliseconds).ThenBy(c=>c.StartMilliseconds).ToArray();
         return new { summary=summary.ContentionSummary,page=Slice(ordered,request.AnalysisId,"contentions",request.Limit,request.Cursor) };
+    }
+    private object InvestigationQuery(QueryInvestigations request)
+    {
+        if(request.Approach is null)
+            return service.Investigations(request.Area,request.Limit,request.Cursor);
+        if(request.Area is null || request.Cursor is not null)
+            throw new LabException("invalid_request","An exact investigation lookup requires area and approach without a cursor.");
+        return service.GetInvestigation(request.Area,request.Approach);
     }
     private object History(QueryHistory request)
     {

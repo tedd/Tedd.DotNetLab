@@ -102,8 +102,24 @@ public sealed class McpTests
         Assert.Contains("live_benchmark_summary",schemas);
         Assert.Contains("live_benchmark_comparison",schemas);
         Assert.Contains("\"live_benchmark\"",schemas);
+        Assert.Contains("\"record_investigation\"",schemas);
+        Assert.Contains("\"investigations\"",schemas);
         Assert.IsType<PrepareDeletion>(Wire.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}"));
         Assert.Throws<JsonException>(()=>JsonSerializer.Deserialize<ExperimentRequest>("{\"action\":\"prepare_deletion\",\"artifact_ids\":[],\"reason\":\"fixture\"}",McpCatalog.Json));
+    }
+    [Fact]
+    public async Task StdioInvestigationRoutesExposeRetainedCoverage()
+    {
+        using var workspace=new TestWorkspace(); using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await using var client=await Connect(workspace.Root,timeout.Token);
+        var claim=await Call(client,"lab.experiment",new
+        {
+            action="record_investigation",area="parser",approach="reuse-buffer",status="dead_end",notes="No change in allocations."
+        },timeout.Token);
+        var page=await Call(client,"lab.query",new { view="investigations",area="parser" },timeout.Token);
+        var row=Assert.Single(page.GetProperty("rows").EnumerateArray());
+        Assert.Equal(claim.GetProperty("id").GetString(),row.GetProperty("id").GetString());
+        Assert.Contains("dead_end",row.GetProperty("json").GetString());
     }
     private static async Task<JsonElement> Call(McpClient client,string tool,object request,CancellationToken cancellation)
     {

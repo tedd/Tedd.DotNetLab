@@ -40,6 +40,7 @@ public record InspectNative(string TargetId,string MethodId,string ExpectedTarge
 [JsonDerivedType(typeof(ReviseHypothesis),"revise_hypothesis")]
 [JsonDerivedType(typeof(CreateCandidate),"create_candidate")]
 [JsonDerivedType(typeof(CreatePlan),"create_plan")]
+[JsonDerivedType(typeof(RecordInvestigation),"record_investigation")]
 [JsonDerivedType(typeof(CreateWorkItem),"create_work_item")]
 [JsonDerivedType(typeof(ReviseWorkItem),"revise_work_item")]
 [JsonDerivedType(typeof(RecordDecision),"record_decision")]
@@ -98,6 +99,8 @@ public record CreateNativeSeries(IReadOnlyList<string> TrialPlanIds,AnalysisPoli
 public record CreateIndividualLatencyPlan(string ScenarioId,string ScenarioVersion,string InputHash,string Variant,int Operations=100,int WarmupBatches=1,int MaximumDurationSeconds=60,string? CompilationControlId=null,
     [property:Description("Exact target runtime, including preview suffix; must match the harness handshake. Other .NET 10+ Windows x64 versions require quiet managed execution and leased runtime-image identities. Does not select the controller runtime or qualify native profiling.")]
     string? TargetRuntimeVersion=null) : ExperimentRequest;
+public record RecordInvestigation(string Area,string Approach,string Status,string Notes,
+    IReadOnlyList<string>? EvidenceIds=null,string? PullRequestUrl=null,string? ExpectedRevision=null) : ExperimentRequest;
 public record CreateWorkItem(string Question,int Priority,IReadOnlyList<string> Dependencies,IReadOnlyList<string> EvidenceIds) : ExperimentRequest;
 public record ReviseWorkItem(string Id,string ExpectedRevision,string Question,int Priority,string State,IReadOnlyList<string> Dependencies,IReadOnlyList<string> EvidenceIds) : ExperimentRequest;
 public record RecordDecision(string ComparisonId,string Decision,string Rationale) : ExperimentRequest;
@@ -163,6 +166,7 @@ public record RegisterNativeSeriesResults(string PlanId,IReadOnlyList<string> Re
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName="view")]
 [JsonDerivedType(typeof(QueryRecord),"record")]
+[JsonDerivedType(typeof(QueryInvestigations),"investigations")]
 [JsonDerivedType(typeof(QueryHistory),"history")]
 [JsonDerivedType(typeof(QueryMetric),"metric")]
 [JsonDerivedType(typeof(QueryGc),"gc_timeline")]
@@ -195,6 +199,7 @@ public record RegisterNativeSeriesResults(string PlanId,IReadOnlyList<string> Re
 public abstract record QueryRequest;
 public record QueryRecord(string Id,string? Revision=null) : QueryRequest;
 public record QueryHistory(string Kind,int Limit=100,string? Cursor=null) : QueryRequest;
+public record QueryInvestigations(string? Area=null,string? Approach=null,int Limit=20,string? Cursor=null) : QueryRequest;
 public record QueryMetric(string AnalysisId,string Metric) : QueryRequest;
 public record QueryGc(string AnalysisId,int Limit=100,string? Cursor=null) : QueryRequest;
 public record QueryCounters(string AnalysisId,int Limit=100,string? Cursor=null) : QueryRequest;

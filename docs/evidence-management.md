@@ -1,10 +1,24 @@
 # Local evidence management
 
-Exports are local, explicit selections. They do not upload data or authorize source changes. The workspace catalog permits one controller at a time. Raw traces, code, provider text, paths, and application names can contain sensitive information.
+The workspace catalog permits one controller at a time. Raw traces, code, provider text, paths, and application names can contain sensitive information.
 
-Linux catalog workspaces require ext4, XFS, Btrfs, or local overlayfs. Windows-backed WSL/v9fs, network, FUSE, volatile, and unknown filesystem types are rejected before opening SQLite. Catalog and WAL sidecars need the same local shared-memory and locking semantics; [SQLite's WAL contract](https://www.sqlite.org/wal.html) defines this requirement.
+Linux catalog workspaces require ext4, XFS, Btrfs, or local overlayfs. Windows-backed WSL/v9fs, network, FUSE, volatile, and unknown filesystem types are rejected before opening SQLite. Catalog and WAL sidecars need the same local shared-memory and locking semantics, as specified by [SQLite's WAL contract](https://www.sqlite.org/wal.html).
+
+## Investigation coverage
+
+Use the same project workspace across agent sessions to retain investigation coverage with the measurement catalog. A project-scoped install defaults to `<project-dir>/.DotNetLab`. Add `.DotNetLab/` to the target project's ignore rules to keep the catalog and raw artifacts local. Select a common path with `--workspace` to reuse an existing catalog or share it across local checkouts.
+
+Before starting an experiment, call `lab.query` with `view=investigations` and an `area` key to review prior approaches. Omit `area` to enumerate all areas. List results accept `limit` (default 20) and a cursor from the same filter. Supply both `area` and `approach` for exact lookup, which returns `record_not_found` for an unregistered approach. Keys use lowercase ASCII letters, digits, and internal hyphens. Reuse the established keys for the same area and mechanism.
+
+Search the repository's pull requests for the area and mechanism, including open and merged work. PR links and statuses in the catalog reflect the last recorded observation. When work is already covered, record the existing PR and proceed only if a distinct approach or changed conditions warrant a new investigation.
+
+Call `lab.experiment` with `action=record_investigation`, `area`, `approach`, `status=in_progress`, and `notes` to claim an unregistered approach. Concurrent claims for the same keys return `revision_conflict` to the losing caller. To update an existing record, supply its latest `expected_revision` as a decimal string. On conflict, re-read the record before deciding whether to continue.
+
+Use `dead_end`, `inconclusive`, `supported`, or `abandoned` to record the disposition. Use `pr_open`, `pr_merged`, or `pr_closed` with an HTTPS `pull_request_url` for PR coverage. Each revision is a complete snapshot. Carry forward applicable notes, links, and `evidence_ids` when updating it. Write Markdown notes with the code revision, workload and runtime, intervention, outcome, and conditions that would justify revisiting the work. Reference retained catalog records using `evidence_ids`. Use `lab.query` with `view=record`, `id`, and `revision` to read a prior snapshot.
 
 ## Prepare and authorize
+
+An export saves an explicit selection of evidence locally.
 
 `lab.experiment` with `action=prepare_export` takes `record_ids`, `artifact_ids`, `privacy_filtered`, `maximum_bundle_bytes`, and `maximum_duration_seconds`. The byte limit is an exact decimal Int64 string; defaults are 1 GiB and 300 seconds. The combined inclusion list is distinct and bounded to 1,000 items. Complete selected artifact hashes are verified; selected record revisions and hashes are frozen. Later narrative revisions do not alter the plan. A selection of control grants is rejected.
 

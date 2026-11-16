@@ -104,7 +104,7 @@ public sealed partial class Catalog : IDisposable
             {
                 using var old = Command(db, tx, "SELECT Kind,Json FROM Record WHERE Id=$id AND Revision=$rev", ("$id",id),("$rev",previous));
                 using var read = old.ExecuteReader(); read.Read();
-                if (read.GetString(0) != kind || !new[]{"hypothesis","work_item","target","capture","execution","baseline_alias"}.Contains(kind))
+                if (read.GetString(0) != kind || !new[]{"hypothesis","work_item","investigation","target","capture","execution","baseline_alias"}.Contains(kind))
                     throw new LabException("immutable_record", "Completed evidence and record kinds are immutable.");
                 using var document = System.Text.Json.JsonDocument.Parse(read.GetString(1));
                 if (kind is "capture" or "execution" && document.RootElement.TryGetProperty("state",out var state) &&
@@ -149,7 +149,7 @@ public sealed partial class Catalog : IDisposable
     }
     private static NotebookRecord ReadRecord(SqliteDataReader r) =>
         new(r.GetString(0), r.GetString(1), r.GetInt64(2), r.GetString(3), r.GetString(4), DateTimeOffset.Parse(r.GetString(5)));
-    public Page<NotebookRecord> List(string kind, int limit = 100, string? cursor = null,bool includeOversizedFirst=false)
+    public Page<NotebookRecord> List(string kind, int limit = 100, string? cursor = null,bool includeOversizedFirst=false,string? prefix=null)
     {
         if (limit is < 1 or > 1000) throw new LabException("resource_limit", "Page limit must be 1..1000.");
         string after = "";
@@ -159,16 +159,18 @@ public sealed partial class Catalog : IDisposable
             try { anchor=Get(cursor); }
             catch(LabException error) when(error.Code=="record_not_found")
             { throw new LabException("invalid_cursor","Cursor anchor is unknown or no longer retained."); }
-            if (anchor.Kind != kind) throw new LabException("invalid_cursor", "Cursor belongs to another view.");
+            if (anchor.Kind != kind || prefix is not null && !anchor.Id.StartsWith(prefix,StringComparison.Ordinal))
+                throw new LabException("invalid_cursor", "Cursor belongs to another view.");
             after = anchor.Id;
         }
         using var db = Open();
         using var command = Command(db, null, """
             SELECT r.Id,r.Kind,r.Revision,r.Hash,r.Json,r.CreatedAt FROM Record r
             WHERE r.Kind=$kind AND r.Id>$after
+            AND ($prefix IS NULL OR substr(r.Id,1,length($prefix))=$prefix)
             AND r.Revision=(SELECT MAX(s.Revision) FROM Record s WHERE s.Id=r.Id)
             ORDER BY r.Id LIMIT $limit
-            """, ("$kind", kind), ("$after", after), ("$limit", limit + 1));
+            """, ("$kind", kind), ("$after", after), ("$limit", limit + 1), ("$prefix", prefix));
         using var reader = command.ExecuteReader();
         var rows = new List<NotebookRecord>();
         int bytes = 0;

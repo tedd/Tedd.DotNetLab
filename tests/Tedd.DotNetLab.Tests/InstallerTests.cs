@@ -202,7 +202,7 @@ public sealed class InstallerTests
     {
         using var workspace = new TestWorkspace();
         string projectDir = Path.Combine(workspace.Root, "sample-project");
-        string labWorkspace = Path.Combine(workspace.Root, "project-lab");
+        string labWorkspace = Path.Combine(projectDir, ".DotNetLab");
         Directory.CreateDirectory(projectDir);
 
         string hostDll = Path.Combine(TestWorkspace.TaskRoot, "bin", "Tedd.DotNetLab.Host", "Release", "net10.0", "Tedd.DotNetLab.Host.dll");
@@ -220,8 +220,6 @@ public sealed class InstallerTests
         start.ArgumentList.Add("project");
         start.ArgumentList.Add("--project-dir");
         start.ArgumentList.Add(projectDir);
-        start.ArgumentList.Add("--workspace");
-        start.ArgumentList.Add(labWorkspace);
 
         using var process = Process.Start(TestWorkspace.PinRuntime(start))!;
         var stdout = process.StandardOutput.ReadToEndAsync();
@@ -231,6 +229,8 @@ public sealed class InstallerTests
 
         var result = Wire.Deserialize<InstallResult>(await stdout);
         Assert.Equal("ok", result.Status);
+        Assert.Equal(labWorkspace, result.Workspace);
+        Assert.True(File.Exists(Path.Combine(labWorkspace, "catalog.sqlite")));
         Assert.Equal(4, result.Clients.Count);
         Assert.True(File.Exists(Path.Combine(projectDir, ".agents", "skills", "dotnetlab", "SKILL.md")));
         Assert.True(File.Exists(Path.Combine(projectDir, ".codex", "config.toml")));
@@ -245,5 +245,20 @@ public sealed class InstallerTests
         Assert.True(File.Exists(Path.Combine(projectDir, ".agents", "skills", "dotnetlab", "SKILL.md")));
         await Installer.RunAsync(["uninstall", "agy", "--scope", "project", "--project-dir", projectDir]);
         Assert.False(Directory.Exists(Path.Combine(projectDir, ".agents", "skills", "dotnetlab")));
+        Assert.True(File.Exists(Path.Combine(labWorkspace, "catalog.sqlite")));
+    }
+
+    [Fact]
+    public async Task ProjectScopeHonorsExplicitWorkspaceWithoutCreatingDefault()
+    {
+        using var workspace = new TestWorkspace();
+        string explicitWorkspace = Path.Combine(workspace.Root, "existing-lab");
+        var result = await Installer.RunAsync([
+            "install", "codex", "--scope", "project", "--project-dir", workspace.Root,
+            "--workspace", explicitWorkspace, "--dry-run"
+        ]);
+        Assert.Equal(explicitWorkspace, result.Workspace);
+        Assert.False(Directory.Exists(explicitWorkspace));
+        Assert.False(Directory.Exists(Path.Combine(workspace.Root, ".DotNetLab")));
     }
 }

@@ -230,6 +230,8 @@ dotnet /path/to/Tedd.DotNetLab.Host.dll install all --enable-native-extension
 dotnet /path/to/Tedd.DotNetLab.Host.dll uninstall all
 ```
 
+Project installs default to `.DotNetLab/`, where the catalog keeps measurement results and investigation coverage across agent sessions. Use `--workspace` to select an existing catalog or share a local workspace across checkouts. See [investigation coverage](docs/evidence-management.md#investigation-coverage).
+
 **Or install via NuGet / `.NET Tool` packages (from NuGet or GitHub Release/Actions `.nupkg` artifacts):**
 ```bash
 # Install the dotnetlab CLI + MCP host globally and register skills/MCP for your AI clients:

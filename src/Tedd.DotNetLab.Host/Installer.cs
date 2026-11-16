@@ -106,12 +106,13 @@ public static class Installer
             throw new LabException("invalid_path", $"Host assembly was not found at '{resolvedHost}'.");
 
         string resolvedDotnet = ResolveDotnetExecutable(dotnetPath);
-        string resolvedWorkspace = Path.GetFullPath(workspace ?? DefaultWorkspacePath());
-        VerifyNoReparsePoints(resolvedWorkspace);
-
         string resolvedProjectDir = Path.GetFullPath(projectDir ?? Environment.CurrentDirectory);
         if (scope == "project")
             VerifyNoReparsePoints(resolvedProjectDir);
+
+        string resolvedWorkspace = Path.GetFullPath(workspace ??
+            (scope == "project" ? Path.Combine(resolvedProjectDir, ".DotNetLab") : DefaultWorkspacePath()));
+        VerifyNoReparsePoints(resolvedWorkspace);
 
         string resolvedSkillSource = ResolveSkillSource(skillSource, resolvedHost);
         if (!uninstall && !Directory.Exists(resolvedSkillSource))

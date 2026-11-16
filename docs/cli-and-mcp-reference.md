@@ -21,7 +21,7 @@ Copies the bundled `dotnetlab` agent skill and registers the `dotnetlab` MCP ser
 | Option | Description |
 | --- | --- |
 | `all \| codex \| claude \| cursor \| antigravity` | Target AI client(s) to configure—accepts `agy` as an alias for `antigravity` and comma-separated lists like `cursor,antigravity` (default: `all`). |
-| `--workspace <path>` | Workspace directory for `catalog.sqlite` and `artifacts/` (defaults to `%LOCALAPPDATA%\Tedd.DotNetLab\workspace` on Windows or `~/.local/share/dotnetlab/workspace` on Linux). |
+| `--workspace <path>` | Workspace directory for `catalog.sqlite` and `artifacts/`. Project scope defaults to `<project-dir>/.DotNetLab`. User scope defaults to `%LOCALAPPDATA%\Tedd.DotNetLab\workspace` on Windows or `~/.local/share/dotnetlab/workspace` on Linux. |
 | `--scope <user\|project>` | Install into user-wide config (`~/.codex`, `~/.claude`, `~/.cursor`, `~/.gemini/config`) or project-scoped config (`.codex/config.toml`, `.agents/skills`, `.agents/mcp_config.json`, `.claude/skills`, `.mcp.json`, `.cursor/skills`, `.cursor/mcp.json`). Default: `user`. |
 | `--project-dir <path>` | Target repository directory when `--scope project` is selected (default: current directory). |
 | `--enable-native-extension` | Appends `--enable-native-extension` to the registered MCP server arguments so `lab.patch` is available. |
@@ -122,6 +122,7 @@ Every MCP tool accepts a single top-level argument `{"request": { ... }}` using 
 | --- | --- |
 | `create_hypothesis` / `revise_hypothesis` | Records falsifiable mechanism claims and quantitative predictions in the experiment ledger. |
 | `create_work_item` / `revise_work_item` | Tracks investigation questions and DAG dependencies (rejecting cycles). |
+| `record_investigation` | Claims or revises an area and approach, with notes, evidence references, and a pull request link. |
 | `create_candidate` / `record_decision` | Registers optimization candidates and records evidence-backed adoption/rejection decisions. |
 | `create_plan` | Freezes a randomized complete block experiment plan (2-arm A/B, multi-variant, or $2 \times 2$ `FactorialDesign`, primary metric, guardrails, warmup, seed, and optional `target_runtime_version`). |
 | `create_quantile_plan` | Freezes a cluster-bootstrapped tail-latency quantile plan (e.g., p50, p95, p99) over paired runs or observation sets. |
@@ -153,7 +154,7 @@ Every MCP tool accepts a single top-level argument `{"request": { ... }}` using 
 Supported `view` values:
 - **Hotspots & Traces:** `hotspots` (inclusive/exclusive rankings), `sampled_method`, `metric`, `gc_timeline`, `suspensions`, `counters`, `counter_window`, `run_window`, `available_evidence`.
 - **Latencies & Native:** `individual_latency_slice`, `verify_native_trial`, `native_series_comparison`.
-- **Catalog & Chunks:** `record`, `history`, `artifact_slice` (reads chunked oversized MCP responses or artifacts), `controller_resources`, `operation_policy`.
+- **Catalog & Chunks:** `investigations` (all areas, one area, or an exact area and approach), `record`, `history`, `artifact_slice` (reads chunked oversized MCP responses or artifacts), `controller_resources`, `operation_policy`.
 
 Evidence administration is available through `dotnetlab call <workspace> <tool>`, with a JSON request on stdin. These actions are excluded from connected MCP schemas:
 

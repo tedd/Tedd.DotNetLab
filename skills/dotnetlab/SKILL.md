@@ -11,6 +11,10 @@ Do not guess bottlenecks from syntax, claim speedups without controlled before/a
 
 ## The 7-Step Scientific Method Loop
 
+Before testing an approach, call `lab.query` with `view=investigations` and the relevant `area`. Include `approach` for an exact lookup when its key is known. Otherwise, page through that area as needed. Reserve unfiltered queries and notebook history for coverage reviews. Search the repository's open and merged pull requests for the same area and mechanism. Reuse existing keys and record matching PRs. Skip covered approaches unless the recorded conditions warrant a retest. Claim new work with `lab.experiment`, `action=record_investigation`, and `status=in_progress`. A revision conflict requires re-reading the existing investigation before proceeding.
+
+When work stops, update the investigation with its latest `expected_revision`, the resulting status, Markdown notes, evidence IDs, and any PR link. Record the source revision, workload, runtime, outcome, and reason to revisit. Use `dead_end`, `inconclusive`, `supported`, `abandoned`, or the applicable PR state (`pr_open`, `pr_merged`, `pr_closed`). PR states require `pull_request_url`. Keep the project workspace consistent across sessions. Project-scoped installs default to `.DotNetLab`.
+
 Read the MCP server's installed version and update instructions at connection. When a newer stable Tedd.DotNetLab release is reported, inform the user once per chat, link to [upgrade instructions](https://github.com/tedd/Tedd.DotNetLab#upgrading), and offer to upgrade after their agreement. If using the CLI without MCP, run `dotnetlab version` for the same check. An unavailable check does not establish that the installed version is current.
 
 | Step | Action | Exit Gate & Evidence |
