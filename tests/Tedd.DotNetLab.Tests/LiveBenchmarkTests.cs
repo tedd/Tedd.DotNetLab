@@ -114,6 +114,57 @@ public sealed class LiveBenchmarkTests
         Assert.Throws<LabException>(()=>LiveBenchmarkStatistics.Summarize(stable with { PolicyHash="different" },policy));
     }
 
+    [Theory,Case("UT-LIVE-BENCH-009","FR-052","M7","Unit")]
+    [InlineData("ordinal")]
+    [InlineData("phase_order")]
+    [InlineData("clock")]
+    [InlineData("completed_work")]
+    [InlineData("allocation")]
+    [InlineData("total_budget")]
+    public void StatisticsRejectMalformedEvidence(string defect)
+    {
+        var policy=FastPolicy with { OperationsPerIteration=1000,MaximumOperationsPerIteration=1000,
+            MaximumTotalOperations=defect=="total_budget"?11999:12000 };
+        var session=Synthetic(policy,[2000,2000,2000,2000,2000,2000]);
+        var rows=session.Iterations.ToArray();
+        var last=rows[^1];
+        rows[^1]=defect switch
+        {
+            "ordinal"=>last with { Ordinal=rows[^2].Ordinal },
+            "phase_order"=>last with { Phase="warmup" },
+            "clock"=>last with { Measurement=last.Measurement with { Frequency=0 } },
+            "completed_work"=>last with { Measurement=last.Measurement with { CompletedOperations=999 } },
+            "allocation"=>last with { Measurement=last.Measurement with { ProcessAllocationBytes=-1 } },
+            _=>last
+        };
+        Assert.Equal("invalid_measurement",Assert.Throws<LabException>(()=>
+            LiveBenchmarkStatistics.Summarize(session with { Iterations=rows },policy)).Code);
+    }
+
+    [Fact,Case("UT-LIVE-BENCH-010","FR-052","M7","Unit")]
+    public void StatisticsNormalizeCostsAndDoNotInventMissingTelemetry()
+    {
+        var policy=FastPolicy with { OperationsPerIteration=1000,MaximumOperationsPerIteration=1000 };
+        var session=Synthetic(policy,[1000,2000,3000,4000,5000,6000]);
+        var summary=LiveBenchmarkStatistics.Summarize(session,policy);
+        Assert.Equal(3500,summary.MeanNanoseconds);
+        Assert.Equal(3500,summary.MedianNanoseconds);
+        Assert.Equal(Math.Sqrt(3_500_000),summary.StandardDeviationNanoseconds!.Value,9);
+        Assert.Equal(2.5,summary.DriftRatio);
+        Assert.Equal(3,summary.ProcessAllocatedBytesPerOperation);
+        Assert.Equal(4,summary.TelemetryPerOperation["cpu.thread_cycles"]);
+        Assert.Equal(.001,summary.TelemetryPerOperation["gc.gen0_collections"]);
+
+        var rows=session.Iterations.ToArray();
+        var last=rows[^1];
+        rows[^1]=last with { Measurement=last.Measurement with { EndThreadId=2,Telemetry=null } };
+        var partial=LiveBenchmarkStatistics.Summarize(session with { Iterations=rows,WarmupConverged=false },policy);
+        Assert.Null(partial.ThreadAllocatedBytesPerOperation);
+        Assert.Empty(partial.TelemetryPerOperation);
+        Assert.Contains("thread_changed",partial.Warnings);
+        Assert.Contains("warmup_not_converged",partial.Warnings);
+    }
+
     private static LiveBenchmarkSession Synthetic(LiveBenchmarkPolicy policy,double[] values)
     {
         var rows=new List<LiveBenchmarkIteration>();
@@ -145,11 +196,21 @@ public sealed class LiveBenchmarkTests
                 var b=await Measure(service,baseline,grant); baselineId=b.Id;
                 var candidate=await service.CreateLiveBenchmarkPlanAsync(target.Id,0,"cpu-sum","candidate",FastPolicy,calibrationResultId:b.Id);
                 var c=await Measure(service,candidate,grant); candidateId=c.Id;
+                var repeat=await Measure(service,candidate,grant);
                 Assert.Equal(b.OperationsPerIteration,c.OperationsPerIteration);
                 Assert.NotEqual(b.Modification.Id,c.Modification.Id);
-                Assert.Equal(2,(await service.AggregateLiveBenchmarksAsync([b.Id,c.Id])).Count);
-                var comparison=await service.CompareLiveBenchmarksAsync([b.Id],[c.Id]);
-                Assert.True(comparison.Ratio>0); Assert.False(comparison.PromotionEligible);
+                var groups=await service.AggregateLiveBenchmarksAsync([b.Id,c.Id,repeat.Id]);
+                Assert.Equal(2,groups.Count);
+                var group=Assert.Single(groups,g=>g.ModificationId==c.Modification.Id);
+                Assert.Equal(2,group.Runs);
+                Assert.Equal(1,group.ProcessSessions);
+                Assert.Equal(c.Summary!.Samples+repeat.Summary!.Samples,group.Samples);
+                double first=c.Summary.MeanNanoseconds!.Value,second=repeat.Summary.MeanNanoseconds!.Value;
+                Assert.Equal((first+second)/2,group.MeanNanoseconds);
+                Assert.Equal(Math.Abs(first-second)/Math.Sqrt(2),group.RunMeanStandardDeviationNanoseconds!.Value,8);
+                var comparison=await service.CompareLiveBenchmarksAsync([b.Id],[c.Id,repeat.Id]);
+                Assert.Equal(group.MeanNanoseconds/b.Summary!.MeanNanoseconds!.Value,comparison.Ratio);
+                Assert.False(comparison.PromotionEligible);
                 await Assert.ThrowsAsync<LabException>(()=>service.AggregateLiveBenchmarksAsync([b.Id,b.Id]));
                 var incompatible=await service.CreateLiveBenchmarkPlanAsync(target.Id,0,"cpu-sum","candidate",
                     FastPolicy with { OperationsPerIteration=b.OperationsPerIteration==1?2:1 });
