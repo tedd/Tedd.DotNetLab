@@ -84,6 +84,9 @@ figcaption { padding: .75rem 1rem; background: #f1f7f4; border-top: 1px solid va
 .proof-strip strong { display: block; font: 500 1.15rem var(--display); letter-spacing: -.025em; }
 .proof-strip span { display: block; margin-top: .35rem; color: var(--muted); font-size: .7rem; }
 .section { padding: clamp(4.5rem, 7vw, 8rem) clamp(1.25rem, 6vw, 7.5rem); }
+.motivation-section { padding-block: clamp(2.5rem, 4vw, 4.5rem); border-top: 1px solid var(--line); }
+.motivation-section > p { max-width: 75ch; margin: 0; color: var(--muted); }
+.motivation-section > p + p { margin-top: 1rem; }
 .results-section { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 2rem 4rem; align-items: center; background: white; }
 .result-story h2 em { color: var(--aqua); font-style: normal; }
 .result-story > p:not(.eyebrow) { color: var(--muted); font-size: .95rem; }
